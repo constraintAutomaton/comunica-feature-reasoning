@@ -10,11 +10,11 @@
   },
   "devDependencies": {
     "@babel/preset-env": "^7.19.0",
-    "@comunica/actor-abstract-parse": "^2.4.0",
-    "@comunica/bus-http-invalidate": "^2.4.0",
-    "@comunica/config-query-sparql": "^2.2.0",
-    "@comunica/logger-void": "^2.4.0",
-    "@comunica/packager": "^2.4.0",
+    "@comunica/actor-abstract-parse": "^3.2.0",
+    "@comunica/bus-http-invalidate": "^3.2.0",
+    "@comunica/config-query-sparql": "^3.2.0",
+    "@comunica/logger-void": "^3.2.0",
+    "@comunica/packager": "^3.1.0",
     "@pollyjs/adapter-node-http": "^6.0.5",
     "@pollyjs/core": "^6.0.5",
     "@pollyjs/persister-fs": "^6.0.5",
@@ -30,7 +30,7 @@
     "@typescript-eslint/eslint-plugin": "^5.37.0",
     "@typescript-eslint/parser": "^5.37.0",
     "arrayify-stream": "^2.0.0",
-    "asynciterator": "^3.7.0",
+    "asynciterator": "^3.9.0",
     "babel-loader": "^9.0.0",
     "colors": "^1.4.0",
     "componentsjs-generator": "^3.1.0",
@@ -66,7 +66,7 @@
     "rdf-quad": "^1.5.0",
     "rdf-terms": "^1.9.0",
     "setup-polly-jest": "^0.11.0",
-    "sparqlalgebrajs": "^4.0.3",
+    "sparqlalgebrajs": "^4.3.0",
     "stream-to-string": "^1.2.0",
     "streamify-array": "^1.0.1",
     "streamify-string": "^1.0.1",
@@ -140,5 +140,6 @@
   },
   "resolutions": {
     "@rdfjs/types": "1.1.0"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"
 }
