@@ -13,7 +13,10 @@ import type { IActionRuleParse, IActorRuleParseOutput } from './ActorRuleParse';
  * @see IActionInit
  */
 export abstract class ActorRuleParseFixedMediaTypes extends ActorAbstractMediaTypedFixed<
-IActionRuleParse, IActorTest, IActorRuleParseOutput> implements IActorRuleParseFixedMediaTypesArgs {
+IActionRuleParse,
+IActorTest,
+IActorRuleParseOutput
+> implements IActorRuleParseFixedMediaTypesArgs {
   /* eslint-disable max-len */
   /**
    * TODO: rm this (and eslint-disable) once we remove the abstract media typed actor

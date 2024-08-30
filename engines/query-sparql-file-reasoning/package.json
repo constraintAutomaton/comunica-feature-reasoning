@@ -2,17 +2,16 @@
   "name": "@comunica/query-sparql-file-reasoning",
   "version": "0.2.0",
   "description": "A SPARQL query engine with reasoning capabilities for querying over decentralized RDF knowledge graphs on the Web",
-  "main": "lib/index.js",
-  "typings": "lib/index",
+  "license": "MIT",
+  "homepage": "https://comunica.dev/",
   "repository": {
     "type": "git",
     "url": "https://github.com/comunica/comunica-feature-reasoning.git",
     "directory": "engines/query-sparql-reasoning"
   },
-  "publishConfig": {
-    "access": "public"
+  "bugs": {
+    "url": "https://github.com/comunica/comunica-feature-reasoning/issues"
   },
-  "sideEffects": false,
   "keywords": [
     "comunica",
     "sparql",
@@ -26,25 +25,46 @@
     "reasoning",
     "file"
   ],
-  "license": "MIT",
+  "sideEffects": false,
+  "main": "lib/index.js",
+  "typings": "lib/index",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "comunica-dynamic-sparql-file-reasoning": "bin/query-dynamic.js",
     "comunica-sparql-file-reasoning": "bin/query.js",
     "comunica-sparql-file-reasoning-http": "bin/http.js"
   },
-  "bugs": {
-    "url": "https://github.com/comunica/comunica-feature-reasoning/issues"
-  },
-  "homepage": "https://comunica.dev/",
   "files": [
-    "components",
-    "config",
-    "lib/**/*.d.ts",
-    "lib/**/*.js",
     "bin/**/*.d.ts",
     "bin/**/*.js",
-    "engine-default.js"
+    "components",
+    "config",
+    "engine-default.js",
+    "lib/**/*.d.ts",
+    "lib/**/*.js"
   ],
+  "scripts": {
+    "build": "npm run build:ts",
+    "build:ts": "node \"../../node_modules/typescript/bin/tsc\"",
+    "prepare": "comunica-compile-config config/config-default.json > engine-default.js",
+    "browser": "npm run prepare && \"../../node_modules/webpack/bin/webpack.js\" --config webpack.config.js --mode production",
+    "browser-profile": "\"../../node_modules/webpack/bin/webpack.js\" --config webpack.config.js --profile --mode production --json > stats.json && webpack-bundle-analyzer stats.json && rm stats.json",
+    "spec:base": "node ../../node_modules/rdf-test-suite/bin/Runner.js spec/sparql-engine.js http://w3c.github.io/rdf-tests/sparql11/data-sparql11/manifest-all.ttl -c ../../.rdf-test-suite-cache/",
+    "spec:query": "yarn run spec:base -s http://www.w3.org/TR/sparql11-query/",
+    "spec:update": "yarn run spec:base -s http://www.w3.org/TR/sparql11-update/ -e",
+    "spec:csv-tsv": "yarn run spec:base -s http://www.w3.org/TR/sparql11-results-csv-tsv/",
+    "spec:json": "yarn run spec:base -s http://www.w3.org/TR/sparql11-results-json/",
+    "spec:fed": "yarn run spec:base -s http://www.w3.org/TR/sparql11-federated-query/",
+    "spec:sd": "yarn run spec:base -s http://www.w3.org/TR/sparql11-service-description/",
+    "spec:prot": "yarn run spec:base -s http://www.w3.org/TR/sparql11-protocol/",
+    "spec:graphstore": "yarn run spec:base -s http://www.w3.org/TR/sparql11-http-rdf-update/",
+    "spec": "yarn run spec:query && yarn run spec:update",
+    "spec-earl": "yarn run spec:query -o earl -p spec/earl-meta.json > earl.ttl",
+    "integration": "rdf-test-suite-ldf spec/sparql-engine.js https://comunica.github.io/manifest-ldf-tests/next/sparql/sparql-manifest.ttl -d 200000 -c ../../.rdf-test-suite-ldf-cache/",
+    "comunica-package": "comunica-package -c config/config-default.json"
+  },
   "dependencies": {
     "@comunica/actor-context-preprocess-reasoning-defaults": "^0.2.0",
     "@comunica/actor-context-preprocess-source-to-destination": "^2.4.0",
@@ -183,26 +203,6 @@
     "@comunica/runner": "^2.4.0",
     "@comunica/runner-cli": "^2.4.0",
     "n3": "^1.16.2"
-  },
-  "scripts": {
-    "build": "npm run build:ts",
-    "build:ts": "node \"../../node_modules/typescript/bin/tsc\"",
-    "prepare": "comunica-compile-config config/config-default.json > engine-default.js",
-    "browser": "npm run prepare && \"../../node_modules/webpack/bin/webpack.js\" --config webpack.config.js --mode production",
-    "browser-profile": "\"../../node_modules/webpack/bin/webpack.js\" --config webpack.config.js --profile --mode production --json > stats.json && webpack-bundle-analyzer stats.json && rm stats.json",
-    "spec:base": "node ../../node_modules/rdf-test-suite/bin/Runner.js spec/sparql-engine.js http://w3c.github.io/rdf-tests/sparql11/data-sparql11/manifest-all.ttl -c ../../.rdf-test-suite-cache/",
-    "spec:query": "yarn run spec:base -s http://www.w3.org/TR/sparql11-query/",
-    "spec:update": "yarn run spec:base -s http://www.w3.org/TR/sparql11-update/ -e",
-    "spec:csv-tsv": "yarn run spec:base -s http://www.w3.org/TR/sparql11-results-csv-tsv/",
-    "spec:json": "yarn run spec:base -s http://www.w3.org/TR/sparql11-results-json/",
-    "spec:fed": "yarn run spec:base -s http://www.w3.org/TR/sparql11-federated-query/",
-    "spec:sd": "yarn run spec:base -s http://www.w3.org/TR/sparql11-service-description/",
-    "spec:prot": "yarn run spec:base -s http://www.w3.org/TR/sparql11-protocol/",
-    "spec:graphstore": "yarn run spec:base -s http://www.w3.org/TR/sparql11-http-rdf-update/",
-    "spec": "yarn run spec:query && yarn run spec:update",
-    "spec-earl": "yarn run spec:query -o earl -p spec/earl-meta.json > earl.ttl",
-    "integration": "rdf-test-suite-ldf spec/sparql-engine.js https://comunica.github.io/manifest-ldf-tests/next/sparql/sparql-manifest.ttl -d 200000 -c ../../.rdf-test-suite-ldf-cache/",
-    "comunica-package": "comunica-package -c config/config-default.json"
   },
   "browser": {
     "./lib/index.js": "./lib/index-browser.js"

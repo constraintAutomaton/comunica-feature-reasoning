@@ -26,9 +26,9 @@ describe('MediatedRuleSource', () => {
 
     describe('match', () => {
       it('should return a stream', async() => {
-        expect(await source.get().toArray()).toHaveLength(2);
+        await expect(source.get().toArray()).resolves.toHaveLength(2);
         // Again - this should use the cache
-        expect(await source.get().toArray()).toHaveLength(2);
+        await expect(source.get().toArray()).resolves.toHaveLength(2);
       });
     });
   });

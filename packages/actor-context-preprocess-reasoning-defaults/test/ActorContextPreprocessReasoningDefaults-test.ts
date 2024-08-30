@@ -18,7 +18,7 @@ describe('ActorContextPreprocessReasoningDefaults', () => {
     });
 
     it('should test', () => {
-      return expect(actor.test({ context: new ActionContext() })).resolves.toEqual(true);
+      return expect(actor.test({ context: new ActionContext() })).resolves.toBe(true);
     });
 
     it('should use N3Store default when no implicitDatasetFactory is available', async() => {
@@ -40,7 +40,7 @@ describe('ActorContextPreprocessReasoningDefaults', () => {
         [KeysRdfReason.implicitDatasetFactory.name]: () => 'http://example.org',
       }) });
       const factory = context.getSafe<() => any>(KeysRdfReason.implicitDatasetFactory)();
-      expect(factory).toEqual('http://example.org');
+      expect(factory).toBe('http://example.org');
     });
   });
 });

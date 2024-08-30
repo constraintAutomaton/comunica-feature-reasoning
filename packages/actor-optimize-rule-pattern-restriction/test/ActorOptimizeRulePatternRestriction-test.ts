@@ -23,93 +23,82 @@ describe('ActorOptimizeRulePatternRestriction', () => {
     });
 
     it('should throw an error if no pattern is present', () => {
-      return expect(actor.test({ context: new ActionContext(), rules: fromArray([]) })).rejects.toThrowError();
+      return expect(actor.test({ context: new ActionContext(), rules: fromArray([]) })).rejects.toThrow();
     });
 
     it('should not throw an error if pattern is present and rules are valid', () => {
-      return expect(actor.test({ context: new ActionContext(),
-        rules: fromArray([]),
-        pattern: factory.createPattern(
-          DF.variable('x'),
-          DF.variable('x'),
-          DF.variable('x'),
-        ) })).resolves.toBeTruthy();
+      return expect(actor.test({ context: new ActionContext(), rules: fromArray([]), pattern: factory.createPattern(
+        DF.variable('x'),
+        DF.variable('x'),
+        DF.variable('x'),
+      ) })).resolves.toBeTruthy();
     });
 
     it('should not throw an error if all variables are distinct', () => {
-      return expect(actor.test({ context: new ActionContext(),
-        rules: fromArray([]),
-        pattern: factory.createPattern(
-          DF.variable('s'),
-          DF.variable('p'),
-          DF.variable('o'),
-          DF.variable('g'),
-        ) })).rejects.toThrowError();
+      return expect(actor.test({ context: new ActionContext(), rules: fromArray([]), pattern: factory.createPattern(
+        DF.variable('s'),
+        DF.variable('p'),
+        DF.variable('o'),
+        DF.variable('g'),
+      ) })).rejects.toThrow();
     });
 
     it('should be true if there is at least one namedNode in the pattern', () => {
-      return expect(actor.test({ context: new ActionContext(),
-        rules: fromArray([]),
-        pattern: factory.createPattern(
-          DF.variable('s'),
-          DF.namedNode('p'),
-          DF.variable('o'),
-          DF.variable('g'),
-        ) })).resolves.toBeTruthy();
+      return expect(actor.test({ context: new ActionContext(), rules: fromArray([]), pattern: factory.createPattern(
+        DF.variable('s'),
+        DF.namedNode('p'),
+        DF.variable('o'),
+        DF.variable('g'),
+      ) })).resolves.toBeTruthy();
     });
 
     it('should run', async() => {
-      const { rules } = await actor.run({ context: new ActionContext(),
-        rules: fromArray<Rule>([
-          {
-            ruleType: 'premise-conclusion',
-            premise: [],
-            conclusion: [],
-          },
-        ]) });
-      expect(await rules.toArray()).toEqual([]);
+      const { rules } = await actor.run({ context: new ActionContext(), rules: fromArray<Rule>([
+        {
+          ruleType: 'premise-conclusion',
+          premise: [],
+          conclusion: [],
+        },
+      ]) });
+      await expect(rules.toArray()).resolves.toEqual([]);
     });
 
     it('should remove a single rule that does not match the pattern', async() => {
-      const { rules } = await actor.run({ context: new ActionContext(),
-        rules: fromArray<Rule>([
-          {
-            ruleType: 'premise-conclusion',
-            premise: [],
-            conclusion: [ DF.quad(
-              DF.namedNode('a'),
-              DF.namedNode('b'),
-              DF.namedNode('c'),
-            ) ],
-          },
-        ]),
-        pattern: factory.createPattern(
-          DF.variable('x'),
-          DF.variable('x'),
-          DF.variable('x'),
-        ) });
-      expect(await rules.toArray()).toEqual([]);
+      const { rules } = await actor.run({ context: new ActionContext(), rules: fromArray<Rule>([
+        {
+          ruleType: 'premise-conclusion',
+          premise: [],
+          conclusion: [ DF.quad(
+            DF.namedNode('a'),
+            DF.namedNode('b'),
+            DF.namedNode('c'),
+          ) ],
+        },
+      ]), pattern: factory.createPattern(
+        DF.variable('x'),
+        DF.variable('x'),
+        DF.variable('x'),
+      ) });
+      await expect(rules.toArray()).resolves.toEqual([]);
     });
 
     it('should keep a single rule that does match the pattern', async() => {
-      const { rules } = await actor.run({ context: new ActionContext(),
-        rules: fromArray<Rule>([
-          {
-            ruleType: 'premise-conclusion',
-            premise: [],
-            conclusion: [ DF.quad(
-              DF.namedNode('a'),
-              DF.namedNode('a'),
-              DF.namedNode('a'),
-            ) ],
-          },
-        ]),
-        pattern: factory.createPattern(
-          DF.variable('x'),
-          DF.variable('x'),
-          DF.variable('x'),
-        ) });
-      expect(await rules.toArray()).toEqual([{
+      const { rules } = await actor.run({ context: new ActionContext(), rules: fromArray<Rule>([
+        {
+          ruleType: 'premise-conclusion',
+          premise: [],
+          conclusion: [ DF.quad(
+            DF.namedNode('a'),
+            DF.namedNode('a'),
+            DF.namedNode('a'),
+          ) ],
+        },
+      ]), pattern: factory.createPattern(
+        DF.variable('x'),
+        DF.variable('x'),
+        DF.variable('x'),
+      ) });
+      await expect(rules.toArray()).resolves.toEqual([{
         ruleType: 'premise-conclusion',
         premise: [],
         conclusion: [ DF.quad(
@@ -121,24 +110,22 @@ describe('ActorOptimizeRulePatternRestriction', () => {
     });
 
     it('should keep a single rule that does match the pattern (variables and namednodes)', async() => {
-      const { rules } = await actor.run({ context: new ActionContext(),
-        rules: fromArray<Rule>([
-          {
-            ruleType: 'premise-conclusion',
-            premise: [],
-            conclusion: [ DF.quad(
-              DF.variable('x'),
-              DF.namedNode('a'),
-              DF.variable('y'),
-            ) ],
-          },
-        ]),
-        pattern: factory.createPattern(
-          DF.variable('x'),
-          DF.variable('x'),
-          DF.variable('x'),
-        ) });
-      expect(await rules.toArray()).toEqual([{
+      const { rules } = await actor.run({ context: new ActionContext(), rules: fromArray<Rule>([
+        {
+          ruleType: 'premise-conclusion',
+          premise: [],
+          conclusion: [ DF.quad(
+            DF.variable('x'),
+            DF.namedNode('a'),
+            DF.variable('y'),
+          ) ],
+        },
+      ]), pattern: factory.createPattern(
+        DF.variable('x'),
+        DF.variable('x'),
+        DF.variable('x'),
+      ) });
+      await expect(rules.toArray()).resolves.toEqual([{
         ruleType: 'premise-conclusion',
         premise: [],
         conclusion: [ DF.quad(
@@ -150,107 +137,101 @@ describe('ActorOptimizeRulePatternRestriction', () => {
     });
 
     it('should keep a single rule that does match another premise', async() => {
-      const { rules } = await actor.run({ context: new ActionContext(),
-        rules: fromArray<Rule>([
-          {
-            ruleType: 'premise-conclusion',
-            premise: [ DF.quad(
-              DF.namedNode('s'),
-              DF.namedNode('p'),
-              DF.namedNode('o'),
-            ) ],
-            conclusion: [ DF.quad(
-              DF.variable('x'),
-              DF.namedNode('a'),
-              DF.variable('y'),
-            ) ],
-          },
-          {
-            ruleType: 'premise-conclusion',
-            premise: [ DF.quad(
-              DF.namedNode('f'),
-              DF.namedNode('n'),
-              DF.namedNode('t'),
-            ) ],
-            conclusion: [ DF.quad(
-              DF.namedNode('s'),
-              DF.namedNode('p'),
-              DF.namedNode('o'),
-            ) ],
-          },
-        ]),
-        pattern: factory.createPattern(
-          DF.variable('x'),
-          DF.variable('x'),
-          DF.variable('x'),
-        ) });
-      expect(await rules.toArray()).toHaveLength(2);
+      const { rules } = await actor.run({ context: new ActionContext(), rules: fromArray<Rule>([
+        {
+          ruleType: 'premise-conclusion',
+          premise: [ DF.quad(
+            DF.namedNode('s'),
+            DF.namedNode('p'),
+            DF.namedNode('o'),
+          ) ],
+          conclusion: [ DF.quad(
+            DF.variable('x'),
+            DF.namedNode('a'),
+            DF.variable('y'),
+          ) ],
+        },
+        {
+          ruleType: 'premise-conclusion',
+          premise: [ DF.quad(
+            DF.namedNode('f'),
+            DF.namedNode('n'),
+            DF.namedNode('t'),
+          ) ],
+          conclusion: [ DF.quad(
+            DF.namedNode('s'),
+            DF.namedNode('p'),
+            DF.namedNode('o'),
+          ) ],
+        },
+      ]), pattern: factory.createPattern(
+        DF.variable('x'),
+        DF.variable('x'),
+        DF.variable('x'),
+      ) });
+      await expect(rules.toArray()).resolves.toHaveLength(2);
     });
 
     it('should work with default graph rule', async() => {
-      const { rules } = await actor.run({ context: new ActionContext(),
-        rules: fromArray<Rule>([
-          {
-            ruleType: 'premise-conclusion',
-            premise: [ DF.quad(
-              DF.variable('s'),
-              DF.namedNode('a'),
-              DF.variable('o'),
-              DF.defaultGraph(),
-            ), DF.quad(
-              DF.variable('o'),
-              DF.namedNode('subClassOf'),
-              DF.variable('o2'),
-              DF.defaultGraph(),
-            ) ],
-            conclusion: [ DF.quad(
-              DF.variable('s'),
-              DF.namedNode('a'),
-              DF.variable('o2'),
-              DF.defaultGraph(),
-            ) ],
-          },
-        ]),
-        pattern: factory.createPattern(
-          DF.variable('s'),
-          DF.variable('p'),
-          DF.variable('o'),
-          DF.variable('g'),
-        ) });
-      expect(await rules.toArray()).toHaveLength(1);
+      const { rules } = await actor.run({ context: new ActionContext(), rules: fromArray<Rule>([
+        {
+          ruleType: 'premise-conclusion',
+          premise: [ DF.quad(
+            DF.variable('s'),
+            DF.namedNode('a'),
+            DF.variable('o'),
+            DF.defaultGraph(),
+          ), DF.quad(
+            DF.variable('o'),
+            DF.namedNode('subClassOf'),
+            DF.variable('o2'),
+            DF.defaultGraph(),
+          ) ],
+          conclusion: [ DF.quad(
+            DF.variable('s'),
+            DF.namedNode('a'),
+            DF.variable('o2'),
+            DF.defaultGraph(),
+          ) ],
+        },
+      ]), pattern: factory.createPattern(
+        DF.variable('s'),
+        DF.variable('p'),
+        DF.variable('o'),
+        DF.variable('g'),
+      ) });
+      await expect(rules.toArray()).resolves.toHaveLength(1);
     });
 
     it('should work with default graph rule and using restricted pattern', async() => {
-      const { rules } = await actor.run({ context: new ActionContext(),
-        rules: fromArray<Rule>([
-          {
-            ruleType: 'premise-conclusion',
-            premise: [ DF.quad(
-              DF.variable('s'),
-              DF.namedNode('a'),
-              DF.variable('o'),
-              DF.defaultGraph(),
-            ), DF.quad(
-              DF.variable('o'),
-              DF.namedNode('subClassOf'),
-              DF.variable('o2'),
-              DF.defaultGraph(),
-            ) ],
-            conclusion: [ DF.quad(
-              DF.variable('s'),
-              DF.namedNode('a'),
-              DF.variable('o2'),
-              DF.defaultGraph(),
-            ) ],
-          },
-        ]),
-        pattern: factory.createPattern(
-          DF.namedNode('Jesse'),
-          DF.namedNode('a'),
-          DF.variable('o'),
-          DF.variable('g'),
-        ) });
-      expect(await rules.toArray()).toHaveLength(1);
+      const { rules } = await actor.run({ context: new ActionContext(), rules: fromArray<Rule>([
+        {
+          ruleType: 'premise-conclusion',
+          premise: [ DF.quad(
+            DF.variable('s'),
+            DF.namedNode('a'),
+            DF.variable('o'),
+            DF.defaultGraph(),
+          ), DF.quad(
+            DF.variable('o'),
+            DF.namedNode('subClassOf'),
+            DF.variable('o2'),
+            DF.defaultGraph(),
+          ) ],
+          conclusion: [ DF.quad(
+            DF.variable('s'),
+            DF.namedNode('a'),
+            DF.variable('o2'),
+            DF.defaultGraph(),
+          ) ],
+        },
+      ]), pattern: factory.createPattern(
+        DF.namedNode('Jesse'),
+        DF.namedNode('a'),
+        DF.variable('o'),
+        DF.variable('g'),
+      ) });
+      await expect(rules.toArray()).resolves.toHaveLength(1);
     });
   });
 });

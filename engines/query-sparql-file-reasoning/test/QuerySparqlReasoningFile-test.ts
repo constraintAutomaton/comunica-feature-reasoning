@@ -1,7 +1,7 @@
 /** @jest-environment setup-polly-jest/jest-environment-node */
 
 // Needed to undo automock from actor-http-native, cleaner workarounds do not appear to be working.
-import * as path from 'path';
+import * as path from 'node:path';
 import { KeysRdfReason } from '@comunica/reasoning-context-entries';
 import { Store } from 'n3';
 import { DataFactory } from 'rdf-data-factory';
@@ -40,7 +40,7 @@ describe('System test: QuerySparqlReasoning', () => {
             ),
           ]) ],
         });
-        expect(await result.toArray()).toHaveLength(1);
+        await expect(result.toArray()).resolves.toHaveLength(1);
       });
 
       it('should return a single triple with empty rule serialised in n3', async() => {
@@ -55,7 +55,7 @@ describe('System test: QuerySparqlReasoning', () => {
             ),
           ]) ],
         });
-        expect(await result.toArray()).toHaveLength(1);
+        await expect(result.toArray()).resolves.toHaveLength(1);
       });
 
       it('should correctly apply subclasses', async() => {
@@ -75,7 +75,7 @@ describe('System test: QuerySparqlReasoning', () => {
             ),
           ]) ],
         });
-        expect(await result.toArray()).toHaveLength(2);
+        await expect(result.toArray()).resolves.toHaveLength(2);
       });
 
       it('should correctly apply subclasses with subclass rule serialised in n3', async() => {
@@ -95,7 +95,7 @@ describe('System test: QuerySparqlReasoning', () => {
             ),
           ]) ],
         });
-        expect(await result.toArray()).toHaveLength(2);
+        await expect(result.toArray()).resolves.toHaveLength(2);
       });
 
       it('should correctly apply subclasses with subclass rule serialised in n3 - using rules shortcut', async() => {
@@ -115,7 +115,7 @@ describe('System test: QuerySparqlReasoning', () => {
             ),
           ]) ],
         });
-        expect(await result.toArray()).toHaveLength(2);
+        await expect(result.toArray()).resolves.toHaveLength(2);
       });
 
       it(`should correctly apply subclasses with subclass rule serialised in n3 -
@@ -135,7 +135,7 @@ describe('System test: QuerySparqlReasoning', () => {
             ),
           ]) ],
         });
-        expect(await result.toArray()).toHaveLength(2);
+        await expect(result.toArray()).resolves.toHaveLength(2);
       });
     });
   });

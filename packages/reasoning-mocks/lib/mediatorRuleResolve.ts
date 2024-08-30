@@ -143,7 +143,7 @@ export const RULES: Record<string, Rule[]> = {
 
 export const mediatorRuleResolve = <any> {
   async mediate(action: any): Promise<any> {
-    const ruleString: string = action.context.get(KeysRdfReason.rules)!;
+    const ruleString: string = action.context.get(KeysRdfReason.rules);
     return {
       data: fromArray<Rule>(RULES[ruleString]),
     };

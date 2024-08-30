@@ -32,7 +32,7 @@ describe('System test: QuerySparqlReasoning', () => {
       it('should return a single triple', async() => {
         const result = await engine.queryBindings('SELECT * WHERE { ?s ?p ?o }', {
           [KeysRdfReason.implicitDatasetFactory.name]: () => new Store(),
-          // eslint-disable-next-line max-len
+
           [KeysRdfReason.rules.name]: 'https://gist.githubusercontent.com/jeswr/e914df85df0b3d39cfc42f462770ed87/raw/ffd9f5bd6638d8db3d57d2cf4f96e6d003328ac5/rdfs.hylar',
           sources: [ new Store([
             DF.quad(
@@ -42,11 +42,12 @@ describe('System test: QuerySparqlReasoning', () => {
             ),
           ]) ],
         });
-        expect((await result.toArray()).length).toEqual(15);
+        await expect((result.toArray())).resolves.toHaveLength(15);
       });
       it('rdfs rules on timbl and foaf', async() => {
         const result = await engine.queryBindings(
-          'SELECT DISTINCT * WHERE { <https://www.w3.org/People/Berners-Lee/card#i> a ?o }', {
+          'SELECT DISTINCT * WHERE { <https://www.w3.org/People/Berners-Lee/card#i> a ?o }',
+          {
             [KeysRdfReason.implicitDatasetFactory.name]: () => new Store(),
 
             [KeysRdfReason.rules.name]: KeysRdfDereferenceConstantHylar.rdfs,
@@ -68,7 +69,8 @@ describe('System test: QuerySparqlReasoning', () => {
       });
       it('owl2rl on timbl and foaf', async() => {
         const result = await engine.queryBindings(
-          'SELECT DISTINCT * WHERE { <https://www.w3.org/People/Berners-Lee/card#i> a ?o }', {
+          'SELECT DISTINCT * WHERE { <https://www.w3.org/People/Berners-Lee/card#i> a ?o }',
+          {
             [KeysRdfReason.implicitDatasetFactory.name]: () => new Store(),
 
             [KeysRdfReason.rules.name]: KeysRdfDereferenceConstantHylar.owl2rl,
@@ -93,7 +95,8 @@ describe('System test: QuerySparqlReasoning', () => {
 
       it('owl2rl on timbl and foaf - using rules shortcut', async() => {
         const result = await engine.queryBindings(
-          'SELECT DISTINCT * WHERE { <https://www.w3.org/People/Berners-Lee/card#i> a ?o }', {
+          'SELECT DISTINCT * WHERE { <https://www.w3.org/People/Berners-Lee/card#i> a ?o }',
+          {
             [KeysRdfReason.implicitDatasetFactory.name]: () => new Store(),
             rules: KeysRdfDereferenceConstantHylar.owl2rl,
             sources: [
@@ -117,7 +120,8 @@ describe('System test: QuerySparqlReasoning', () => {
 
       it('owl2rl on timbl and foaf - using rules shortcut and no implicit dataset factory', async() => {
         const result = await engine.queryBindings(
-          'SELECT DISTINCT * WHERE { <https://www.w3.org/People/Berners-Lee/card#i> a ?o }', {
+          'SELECT DISTINCT * WHERE { <https://www.w3.org/People/Berners-Lee/card#i> a ?o }',
+          {
             rules: KeysRdfDereferenceConstantHylar.owl2rl,
             sources: [
               'https://www.w3.org/People/Berners-Lee/card',

@@ -15,9 +15,7 @@ export class MediatedRuleSource implements IRuleSource {
     public readonly context: IActionContext,
     public readonly url: string,
     public readonly mediators: IMediatedRuleSourceArgs,
-  ) {
-
-  }
+  ) {}
 
   public get(): AsyncIterator<Rule> {
     if (this.cache) {
@@ -30,7 +28,7 @@ export class MediatedRuleSource implements IRuleSource {
     }).then(({ data }) => data));
 
     this.cache = [];
-    return _data.map(rule => {
+    return _data.map((rule) => {
       this.cache?.push(rule);
       return rule;
     });

@@ -48,7 +48,8 @@ type Match = (pattern: Algebra.Pattern | RDF.Quad) => AsyncIterator<RDF.Quad>;
 type Mapping = Record<string, RDF.Term>;
 
 export function evaluateRuleSet(
-  rules: AsyncIterator<INestedPremiseConclusionRule> | INestedPremiseConclusionRule[], match: Match,
+  rules: AsyncIterator<INestedPremiseConclusionRule> | INestedPremiseConclusionRule[],
+  match: Match,
 ): AsyncIterator<RDF.Quad> {
   // Autostart needs to be false to prevent the iterator from ending before being consumed by rdf-update-quads
   // https://github.com/comunica/comunica-feature-reasoning/issues/904
@@ -69,9 +70,9 @@ AsyncIterator<RDF.Quad> {
       while (rule) {
         mappings = rule.premise.reduce(
           (iterator, premise) => new UnionIterator(iterator.map(
-            mapping => {
+            (mapping) => {
               const cause = substituteQuad(premise, mapping);
-              return match(cause).map(quad => {
+              return match(cause).map((quad) => {
                 let localMapping: Mapping | undefined = {};
 
                 forEachTerms(cause, (term, key) => {

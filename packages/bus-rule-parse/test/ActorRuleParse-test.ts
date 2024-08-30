@@ -13,7 +13,9 @@ describe('ActorRuleParse', () => {
     });
 
     it('should not be able to create new ActorRuleParse objects without \'new\'', () => {
-      expect(() => { (<any> ActorRuleParse)(); }).toThrow();
+      expect(() => {
+        (<any> ActorRuleParse)();
+      }).toThrow();
     });
   });
 });

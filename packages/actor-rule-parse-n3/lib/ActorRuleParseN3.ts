@@ -1,7 +1,9 @@
 import type { MediatorRdfParseHandle } from '@comunica/bus-rdf-parse';
 import type { MediatorRdfResolveQuadPattern } from '@comunica/bus-rdf-resolve-quad-pattern';
 import type {
-  IActionRuleParse, IActorRuleParseOutput, IActorRuleParseFixedMediaTypesArgs,
+  IActionRuleParse,
+  IActorRuleParseOutput,
+  IActorRuleParseFixedMediaTypesArgs,
 } from '@comunica/bus-rule-parse';
 import { ActorRuleParseFixedMediaTypes } from '@comunica/bus-rule-parse';
 import type { ActionContext } from '@comunica/core';

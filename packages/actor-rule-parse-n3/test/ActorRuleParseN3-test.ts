@@ -1,5 +1,5 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import type { IActionAbstractMediaTyped } from '@comunica/actor-abstract-mediatyped';
 import type { IActionRuleParse, IActorRuleParseOutput } from '@comunica/bus-rule-parse';
 import { ActionContext, Bus } from '@comunica/core';

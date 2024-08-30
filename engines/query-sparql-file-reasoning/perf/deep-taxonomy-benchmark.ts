@@ -1,4 +1,4 @@
-import * as path from 'path';
+import * as path from 'node:path';
 import { generateDeepTaxonomy, TARGET_RESULT } from 'deep-taxonomy-benchmark';
 import { Factory } from 'sparqlalgebrajs';
 import { QueryEngine } from '../lib';
@@ -30,7 +30,7 @@ async function deepTaxonomy(extended = false) {
 }
 
 deepTaxonomy()
-  .catch(error => {
+  .catch((error) => {
     // eslint-disable-next-line no-console
     console.error(error);
   });

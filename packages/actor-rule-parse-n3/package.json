@@ -3,15 +3,15 @@
   "version": "0.2.0",
   "description": "A n3 rule-parse actor",
   "lsd:module": true,
-  "main": "lib/index.js",
-  "typings": "lib/index",
+  "license": "MIT",
+  "homepage": "https://comunica.dev/",
   "repository": {
     "type": "git",
     "url": "https://github.com/comunica/comunica-feature-reasoning.git",
     "directory": "packages/actor-rule-parse-n3"
   },
-  "publishConfig": {
-    "access": "public"
+  "bugs": {
+    "url": "https://github.com/comunica/comunica-feature-reasoning/issues"
   },
   "keywords": [
     "comunica",
@@ -19,11 +19,11 @@
     "rule-parse",
     "n3"
   ],
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/comunica/comunica-feature-reasoning/issues"
+  "main": "lib/index.js",
+  "typings": "lib/index",
+  "publishConfig": {
+    "access": "public"
   },
-  "homepage": "https://comunica.dev/",
   "files": [
     "components",
     "lib/**/*.d.ts",

@@ -1,5 +1,7 @@
 import type {
-  IActionOptimizeRule, IActorOptimizeRuleArgs, IActorOptimizeRuleOutput,
+  IActionOptimizeRule,
+  IActorOptimizeRuleArgs,
+  IActorOptimizeRuleOutput,
 } from '@comunica/bus-optimize-rule';
 import { ActorOptimizeRule } from '@comunica/bus-optimize-rule';
 import type { IActorTest } from '@comunica/core';

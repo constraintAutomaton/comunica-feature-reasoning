@@ -73,12 +73,12 @@ describe('ActorRdfResolveQuadPatternInterceptReasoned', () => {
     });
 
     it('should test', () => {
-      return expect(actor.test(action)).resolves.toEqual(true);
+      return expect(actor.test(action)).resolves.toBe(true);
     });
 
     it('should run without implicit data', async() => {
       const { data } = await actor.run(action);
-      expect(await data.toArray()).toEqual([
+      await expect(data.toArray()).resolves.toEqual([
         quad(
           namedNode('http://example.org#Jesse'),
           namedNode('http://example.org#a'),
@@ -101,7 +101,7 @@ describe('ActorRdfResolveQuadPatternInterceptReasoned', () => {
         }),
       });
 
-      expect(await data.toArray()).toEqual([
+      await expect(data.toArray()).resolves.toEqual([
         quad(
           namedNode('http://example.org#Jesse'),
           namedNode('http://example.org#a'),
@@ -116,12 +116,12 @@ describe('ActorRdfResolveQuadPatternInterceptReasoned', () => {
     });
 
     it('should test (multiple sources)', () => {
-      return expect(actor.test(actionMultiSource)).resolves.toEqual(true);
+      return expect(actor.test(actionMultiSource)).resolves.toBe(true);
     });
 
     it('should run without implicit data (multiple sources)', async() => {
       const { data } = await actor.run(actionMultiSource);
-      expect(await data.toArray()).toEqual([
+      await expect(data.toArray()).resolves.toEqual([
         quad(
           namedNode('http://example.org#Jesse'),
           namedNode('http://example.org#a'),
@@ -149,7 +149,7 @@ describe('ActorRdfResolveQuadPatternInterceptReasoned', () => {
         }),
       });
 
-      expect(await data.toArray()).toEqual([
+      await expect(data.toArray()).resolves.toEqual([
         quad(
           namedNode('http://example.org#Jesse'),
           namedNode('http://example.org#a'),

@@ -8,3 +8,4 @@ export const actorParams = {
 };
 
 export * from './mediators';
+export * from './querySource';

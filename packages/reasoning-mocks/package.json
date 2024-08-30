@@ -3,33 +3,36 @@
   "version": "0.2.0",
   "description": "Mocks for Reasoning  in Comunica",
   "lsd:module": true,
-  "main": "lib/index.js",
-  "typings": "lib/index",
+  "license": "MIT",
+  "homepage": "https://comunica.dev/",
   "repository": {
     "type": "git",
     "url": "https://github.com/comunica-feature-reasoning/comunica.git",
     "directory": "packages/reasoning-mocks"
   },
-  "publishConfig": {
-    "access": "public"
+  "bugs": {
+    "url": "https://github.com/comunica/comunica-feature-reasoning/issues"
   },
-  "sideEffects": false,
   "keywords": [
     "comunica",
     "reasoning",
     "mocks"
   ],
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/comunica/comunica-feature-reasoning/issues"
+  "sideEffects": false,
+  "main": "lib/index.js",
+  "typings": "lib/index",
+  "publishConfig": {
+    "access": "public"
   },
-  "homepage": "https://comunica.dev/",
   "files": [
     "lib/**/*.d.ts",
     "lib/**/*.js"
   ],
+  "scripts": {
+    "build": "node \"../../node_modules/typescript/bin/tsc\""
+  },
   "dependencies": {
-    "@comunica/actor-rdf-resolve-quad-pattern-rdfjs-source": "^2.10.0",
+    "@comunica/actor-query-source-identify-rdfjs": "^3.2.0",
     "@comunica/actor-rdf-update-quads-rdfjs-store": "^3.2.0",
     "@comunica/bus-rdf-parse": "^3.2.0",
     "@comunica/bus-rdf-reason": "^0.2.0",
@@ -40,9 +43,6 @@
     "@rdfjs/types": "*",
     "asynciterator": "^3.9.0",
     "n3": "^1.16.2"
-  },
-  "scripts": {
-    "build": "node \"../../node_modules/typescript/bin/tsc\""
   },
   "devDependencies": {
     "@types/n3": "^1.10.4",

@@ -3,39 +3,39 @@
   "version": "0.2.0",
   "description": "A comunica bus for normalizing reasoning rules",
   "lsd:module": true,
-  "main": "lib/index.js",
-  "typings": "lib/index",
+  "license": "MIT",
+  "homepage": "https://comunica.dev/",
   "repository": {
     "type": "git",
     "url": "https://github.com/comunica/comunica-feature-reasoning.git",
     "directory": "packages/bus-normalize-rule"
   },
-  "publishConfig": {
-    "access": "public"
+  "bugs": {
+    "url": "https://github.com/comunica/comunica-feature-reasoning/issues"
   },
   "keywords": [
     "comunica",
     "bus",
     "normalize-rule"
   ],
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/comunica/comunica-feature-reasoning/issues"
+  "main": "lib/index.js",
+  "typings": "lib/index",
+  "publishConfig": {
+    "access": "public"
   },
-  "homepage": "https://comunica.dev/",
   "files": [
     "components",
     "lib/**/*.d.ts",
     "lib/**/*.js"
   ],
-  "dependencies": {
-    "@comunica/core": "^3.2.0",
-    "@comunica/reasoning-types": "^0.2.0"
-  },
   "scripts": {
     "build": "npm run build:ts && npm run build:components",
     "build:ts": "node \"../../node_modules/typescript/bin/tsc\"",
     "build:components": "componentsjs-generator"
+  },
+  "dependencies": {
+    "@comunica/core": "^3.2.0",
+    "@comunica/reasoning-types": "^0.2.0"
   },
   "gitHead": "17b61cff21721451c6cc822377f59e34c53fe9e8"
 }

@@ -1,14 +1,14 @@
-import { KeysRdfUpdateQuads, KeysRdfResolveQuadPattern } from '@comunica/context-entries';
+import { KeysRdfUpdateQuads, KeysQueryOperation } from '@comunica/context-entries';
 import type { IAction, IActorArgs, IActorOutput, IActorTest, Mediate } from '@comunica/core';
 import { Actor, ActionContext } from '@comunica/core';
 import { KeysRdfReason } from '@comunica/reasoning-context-entries';
 import type { IDatasetFactory, IReasonGroup } from '@comunica/reasoning-types';
-import type { IActionContext, IDataDestination, IDataSource } from '@comunica/types';
+import type { IActionContext, IDataDestination, IQuerySourceWrapper } from '@comunica/types';
 import type * as RDF from '@rdfjs/types';
 import type { AsyncIterator } from 'asynciterator';
 import type { Algebra } from 'sparqlalgebrajs';
 
-export function implicitDatasetFactory(context: IActionContext): IDataSource & IDataDestination {
+export function implicitDatasetFactory(context: IActionContext): IQuerySourceWrapper & IDataDestination {
   const datasetFactory = context.get<IDatasetFactory>(KeysRdfReason.implicitDatasetFactory);
   if (!datasetFactory) {
     throw new Error(`Missing context entry for ${KeysRdfReason.implicitDatasetFactory.name}`);
@@ -24,17 +24,15 @@ export function implicitGroupFactory(context: IActionContext): IReasonGroup {
   };
 }
 
-export function getImplicitSource(context: IActionContext): IDataSource & IDataDestination {
+export function getImplicitSource(context: IActionContext): IQuerySourceWrapper & IDataDestination {
   return context.getSafe<IReasonGroup>(KeysRdfReason.data).dataset;
 }
 
-export function getExplicitSources(context: IActionContext): IDataSource[] {
-  return context.has(KeysRdfResolveQuadPattern.source) ?
-    [ context.get(KeysRdfResolveQuadPattern.source)! ] :
-    context.get(KeysRdfResolveQuadPattern.sources) ?? [];
+export function getExplicitSources(context: IActionContext): IQuerySourceWrapper[] {
+  return context.get<IQuerySourceWrapper[]>(KeysQueryOperation.querySources) ?? [];
 }
 
-export function getUnionSources(context: IActionContext): IDataSource[] {
+export function getUnionSources(context: IActionContext): IQuerySourceWrapper[] {
   return [ ...getExplicitSources(context), getImplicitSource(context) ];
 }
 
@@ -44,13 +42,13 @@ export function setImplicitDestination(context: IActionContext): IActionContext 
 
 export function setImplicitSource(context: IActionContext): IActionContext {
   return context
-    .delete(KeysRdfResolveQuadPattern.sources)
-    .set(KeysRdfResolveQuadPattern.source, getImplicitSource(context));
+    .delete(KeysQueryOperation.querySources)
+    .set(KeysQueryOperation.querySources, getImplicitSource(context));
 }
 
 export function setUnionSource(context: IActionContext): IActionContext {
-  return context.delete(KeysRdfResolveQuadPattern.source)
-    .set(KeysRdfResolveQuadPattern.sources, getUnionSources(context));
+  return context.delete(KeysQueryOperation.querySources)
+    .set(KeysQueryOperation.querySources, getUnionSources(context));
 }
 
 export function getContextWithImplicitDataset(context: IActionContext): IActionContext {

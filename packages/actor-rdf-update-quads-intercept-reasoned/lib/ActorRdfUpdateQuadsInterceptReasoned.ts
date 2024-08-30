@@ -1,12 +1,14 @@
 import type { MediatorRdfReason } from '@comunica/bus-rdf-reason';
 import { getContextWithImplicitDataset } from '@comunica/bus-rdf-reason';
-import type { MediatorRdfResolveQuadPattern } from '@comunica/bus-rdf-resolve-quad-pattern';
 import type { IActionRdfUpdateQuads } from '@comunica/bus-rdf-update-quads';
 import type {
-  IActorRdfUpdateQuadsInterceptArgs, IActorRdfUpdateQuadsInterceptOutput,
+  IActorRdfUpdateQuadsInterceptArgs,
+  IActorRdfUpdateQuadsInterceptOutput,
 } from '@comunica/bus-rdf-update-quads-intercept';
 import { ActorRdfUpdateQuadsIntercept } from '@comunica/bus-rdf-update-quads-intercept';
+import { KeysQueryOperation } from '@comunica/context-entries';
 import type { IActorTest } from '@comunica/core';
+import type { IQuerySourceWrapper } from '@comunica/types';
 import type * as RDF from '@rdfjs/types';
 import type { AsyncIterator } from 'asynciterator';
 import { UnionIterator } from 'asynciterator';
@@ -22,7 +24,6 @@ const factory = new Factory();
  */
 export class ActorRdfUpdateQuadsInterceptReasoned extends ActorRdfUpdateQuadsIntercept {
   public readonly mediatorRdfReason: MediatorRdfReason;
-  public readonly mediatorRdfResolveQuadPattern: MediatorRdfResolveQuadPattern;
 
   public constructor(args: IActorRdfUpdateQuadsInterceptReasonedArgs) {
     super(args);
@@ -36,12 +37,12 @@ export class ActorRdfUpdateQuadsInterceptReasoned extends ActorRdfUpdateQuadsInt
   public async run(action: IActionRdfUpdateQuads): Promise<IActorRdfUpdateQuadsInterceptOutput> {
     // TODO: Remove this logic into an actor on top of the update-quads bus that allows you to
     // view quad updates.
+
     const getQuadsFromGraph = async(graph: RDF.Quad_Graph): Promise<AsyncIterator<RDF.Quad>> => {
-      const { data } = await this.mediatorRdfResolveQuadPattern.mediate({
-        context: action.context,
-        pattern: factory.createPattern(variable('?s'), variable('?p'), variable('?o'), graph),
-      });
-      return data;
+      const querySources: IQuerySourceWrapper[] = action.context.get(KeysQueryOperation.querySources)!;
+      const getWholeGraphOperation = factory.createPattern(variable('?s'), variable('?p'), variable('?o'), graph);
+      // To do use all the query sources
+      return querySources[0].source.queryQuads(getWholeGraphOperation, action.context);
     };
 
     async function getGraphDeletedQuads(graphs: RDF.DefaultGraph | 'NAMED' | 'ALL' | RDF.NamedNode[]):
@@ -54,7 +55,7 @@ export class ActorRdfUpdateQuadsInterceptReasoned extends ActorRdfUpdateQuadsInt
         default:
           if (Array.isArray(graphs)) {
             // Remove Promise.all usage once https://github.com/RubenVerborgh/AsyncIterator/issues/42 is resolved
-            const iterators = await Promise.all(graphs.map(graph => getQuadsFromGraph(graph)));
+            const iterators =  graphs.map(graph => getQuadsFromGraph(graph));
             return new UnionIterator<RDF.Quad>(iterators, { autoStart: false });
           }
           return getQuadsFromGraph(graphs);
@@ -97,5 +98,4 @@ export class ActorRdfUpdateQuadsInterceptReasoned extends ActorRdfUpdateQuadsInt
 
 export interface IActorRdfUpdateQuadsInterceptReasonedArgs extends IActorRdfUpdateQuadsInterceptArgs {
   mediatorRdfReason: MediatorRdfReason;
-  mediatorRdfResolveQuadPattern: MediatorRdfResolveQuadPattern;
 }

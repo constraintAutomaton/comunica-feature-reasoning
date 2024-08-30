@@ -1,5 +1,7 @@
 import type {
-  IActionRuleParse, IActorRuleParseOutput, IActorRuleParseFixedMediaTypesArgs,
+  IActionRuleParse,
+  IActorRuleParseOutput,
+  IActorRuleParseFixedMediaTypesArgs,
 } from '@comunica/bus-rule-parse';
 import { ActorRuleParseFixedMediaTypes } from '@comunica/bus-rule-parse';
 import type { Rule } from '@comunica/reasoning-types';

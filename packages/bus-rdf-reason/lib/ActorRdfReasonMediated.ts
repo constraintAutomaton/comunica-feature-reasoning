@@ -1,7 +1,9 @@
 import type { MediatorOptimizeRule } from '@comunica/bus-optimize-rule';
 import type { MediatorRdfResolveQuadPattern } from '@comunica/bus-rdf-resolve-quad-pattern';
 import type {
-  IActionRdfUpdateQuads, IActorRdfUpdateQuadsOutput, MediatorRdfUpdateQuads,
+  IActionRdfUpdateQuads,
+  IActorRdfUpdateQuadsOutput,
+  MediatorRdfUpdateQuads,
 } from '@comunica/bus-rdf-update-quads';
 import type { MediatorRuleResolve } from '@comunica/bus-rule-resolve';
 import type { IActorArgs, IActorTest } from '@comunica/core';
@@ -14,7 +16,10 @@ import { matchPatternMappings } from 'rdf-terms';
 import type { Algebra } from 'sparqlalgebrajs';
 import type { IActionRdfReason, IActorRdfReasonOutput } from './ActorRdfReason';
 import {
-  setReasoningStatus, ActorRdfReason, setImplicitDestination, setUnionSource,
+  setReasoningStatus,
+  ActorRdfReason,
+  setImplicitDestination,
+  setUnionSource,
 } from './ActorRdfReason';
 
 export abstract class ActorRdfReasonMediated extends ActorRdfReason {

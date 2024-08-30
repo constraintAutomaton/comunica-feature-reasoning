@@ -1,18 +1,24 @@
-import { KeysRdfResolveQuadPattern, KeysRdfUpdateQuads } from '@comunica/context-entries';
+import { KeysQueryOperation, KeysRdfUpdateQuads } from '@comunica/context-entries';
 import type { Actor, IActorTest } from '@comunica/core';
 import { ActionContext, Bus } from '@comunica/core';
 import { KeysRdfReason } from '@comunica/reasoning-context-entries';
 import {
-  mediatorOptimizeRule, mediatorRdfResolveQuadPattern, mediatorRdfUpdateQuads, mediatorRuleResolve,
+  mediatorOptimizeRule,
+  mediatorRdfResolveQuadPattern,
+  mediatorRdfUpdateQuads,
+  mediatorRuleResolve,
+  generateSource,
 } from '@comunica/reasoning-mocks';
 import type { IPartialReasonedStatus, IReasonGroup, IReasonStatus } from '@comunica/reasoning-types';
+import type { IQuerySourceWrapper } from '@comunica/types';
 import { fromArray } from 'asynciterator';
 import 'jest-rdf';
 import { DataFactory, Store } from 'n3';
 import { Factory } from 'sparqlalgebrajs';
 import { ActorRdfReasonMediated } from '../lib';
 import type {
-  IActionRdfReason, IActorRdfReasonOutput,
+  IActionRdfReason,
+  IActorRdfReasonOutput,
 } from '../lib/ActorRdfReason';
 import { implicitGroupFactory, setReasoningStatus } from '../lib/ActorRdfReason';
 import type { IActionRdfReasonExecute, IActorRdfReasonMediatedArgs } from '../lib/ActorRdfReasonMediated';
@@ -30,16 +36,18 @@ class MyClass extends ActorRdfReasonMediated {
     return true;
   }
 
-  public async execute(action: IActionRdfReasonExecute): Promise<void> {
-    return Promise.resolve();
-  }
+  public async execute(action: IActionRdfReasonExecute): Promise<void> {}
 }
 
 // TODO: Test resolution of promises
 
 describe('ActorRdfReasonMediated', () => {
   let bus: Bus<
-  Actor<IActionRdfReason, IActorTest, IActorRdfReasonOutput>, IActionRdfReason, IActorTest, IActorRdfReasonOutput>;
+    Actor<IActionRdfReason, IActorTest, IActorRdfReasonOutput>,
+    IActionRdfReason,
+    IActorTest,
+    IActorRdfReasonOutput
+  >;
   beforeEach(() => {
     bus = new Bus({ name: 'bus' });
   });
@@ -48,8 +56,8 @@ describe('ActorRdfReasonMediated', () => {
     let actor: ActorRdfReasonMediated;
     let action: IActionRdfReason;
     let data: IReasonGroup;
-    let destination: Store;
-    let source: Store;
+    let destination: IQuerySourceWrapper;
+    let source: IQuerySourceWrapper;
     let execute: () => Promise<void>;
 
     beforeEach(() => {
@@ -68,22 +76,26 @@ describe('ActorRdfReasonMediated', () => {
         }),
       );
 
-      destination = new Store();
+      destination = {
+        source: generateSource(),
+      };
 
-      source = new Store();
+      source = {
+        source: generateSource(),
+      };
 
       action = {
         context: new ActionContext({
           [KeysRdfReason.data.name]: data,
           [KeysRdfReason.rules.name]: 'my-unnested-rules',
           [KeysRdfUpdateQuads.destination.name]: destination,
-          [KeysRdfResolveQuadPattern.source.name]: source,
+          [KeysQueryOperation.querySources.name]: source,
         }),
       };
     });
 
     it('Should always test true - since that what we have declared our mock class should do', () => {
-      return expect(actor.test(action)).resolves.toEqual(true);
+      return expect(actor.test(action)).resolves.toBe(true);
     });
 
     describe('The actor has been run but not executed', () => {
@@ -182,39 +194,38 @@ describe('ActorRdfReasonMediated', () => {
       });
     });
 
-    describe('The actor has been run but not executed [on a source with fully reasoned false, with action pattern]',
-      () => {
-        let reasoningStatus: any;
+    describe('The actor has been run but not executed [on a source with fully reasoned false, with action pattern]', () => {
+      let reasoningStatus: any;
+      beforeEach(async() => {
+        reasoningStatus = { type: 'full', reasoned: false };
+        setReasoningStatus(action.context, reasoningStatus);
+        execute = (await actor.run({
+          ...action,
+          pattern: factory.createPattern(variable('s'), namedNode('http://example.org#type'), variable('?o')),
+        })).execute;
+      });
+
+      it('Should not be reasoned if execute is not called', async() => {
+        expect(data.status).toMatchObject<IReasonStatus>(reasoningStatus);
+      });
+
+      describe('The actor has been run and executed', () => {
         beforeEach(async() => {
-          reasoningStatus = { type: 'full', reasoned: false };
-          setReasoningStatus(action.context, reasoningStatus);
-          execute = (await actor.run({
-            ...action,
-            pattern: factory.createPattern(variable('s'), namedNode('http://example.org#type'), variable('?o')),
-          })).execute;
+          await execute();
         });
 
-        it('Should not be reasoned if execute is not called', async() => {
-          expect(data.status).toMatchObject<IReasonStatus>(reasoningStatus);
-        });
+        it('Should have partial reasoning applied', () => {
+          const { status } = data;
+          expect(status.type).toBe('partial');
+          const { patterns } = <IPartialReasonedStatus>status;
+          expect(patterns.size).toBe(1);
+          const [[ term, state ]] = patterns.entries();
 
-        describe('The actor has been run and executed', () => {
-          beforeEach(async() => {
-            await execute();
-          });
-
-          it('Should have partial reasoning applied', () => {
-            const { status } = data;
-            expect(status.type).toEqual('partial');
-            const { patterns } = <IPartialReasonedStatus> status;
-            expect(patterns.size).toEqual(1);
-            const [[ term, state ]] = patterns.entries();
-
-            expect(term.equals(quad(variable('s'), namedNode('http://example.org#type'), variable('?o')))).toBe(true);
-            expect(state).toMatchObject({ type: 'full', reasoned: true, done: Promise.resolve() });
-          });
+          expect(term.equals(quad(variable('s'), namedNode('http://example.org#type'), variable('?o')))).toBe(true);
+          expect(state).toMatchObject({ type: 'full', reasoned: true, done: Promise.resolve() });
         });
       });
+    });
 
     describe('Testing the actor on a pattern', () => {
       beforeEach(() => {
@@ -225,7 +236,7 @@ describe('ActorRdfReasonMediated', () => {
       });
 
       it('Should be able to test the actor on a patterned action', () => {
-        return expect(actor.test(action)).resolves.toEqual(true);
+        return expect(actor.test(action)).resolves.toBe(true);
       });
 
       it('Should be full not reasoned before the run action is called', () => {
@@ -248,9 +259,9 @@ describe('ActorRdfReasonMediated', () => {
 
           it('Should have partial reasoning applied', () => {
             const { status } = data;
-            expect(status.type).toEqual('partial');
-            const { patterns } = <IPartialReasonedStatus> status;
-            expect(patterns.size).toEqual(1);
+            expect(status.type).toBe('partial');
+            const { patterns } = <IPartialReasonedStatus>status;
+            expect(patterns.size).toBe(1);
             const [[ term, state ]] = patterns.entries();
 
             expect(term.equals(quad(variable('s'), namedNode('http://example.org#type'), variable('?o')))).toBe(true);
@@ -267,7 +278,9 @@ describe('ActorRdfReasonMediated', () => {
         actionRestricted = {
           ...action,
           pattern: factory.createPattern(
-            variable('s'), namedNode('http://example.org#type'), namedNode('http://example.org#thing'),
+            variable('s'),
+            namedNode('http://example.org#type'),
+            namedNode('http://example.org#thing'),
           ),
         };
 
@@ -291,9 +304,9 @@ describe('ActorRdfReasonMediated', () => {
 
         it('Should have partial reasoning applied', () => {
           const { status } = data;
-          expect(status.type).toEqual('partial');
-          const { patterns } = <IPartialReasonedStatus> status;
-          expect(patterns.size).toEqual(1);
+          expect(status.type).toBe('partial');
+          const { patterns } = <IPartialReasonedStatus>status;
+          expect(patterns.size).toBe(1);
           const [[ term, state ]] = patterns.entries();
 
           expect(term.equals(quad(variable('s'), namedNode('http://example.org#type'), variable('?o')))).toBe(true);
@@ -307,9 +320,9 @@ describe('ActorRdfReasonMediated', () => {
 
           it('Should not have applied any further reasoning', () => {
             const { status } = data;
-            expect(status.type).toEqual('partial');
-            const { patterns } = <IPartialReasonedStatus> status;
-            expect(patterns.size).toEqual(1);
+            expect(status.type).toBe('partial');
+            const { patterns } = <IPartialReasonedStatus>status;
+            expect(patterns.size).toBe(1);
             const [[ term, state ]] = patterns.entries();
 
             expect(term.equals(quad(variable('s'), namedNode('http://example.org#type'), variable('?o')))).toBe(true);
@@ -353,9 +366,9 @@ describe('ActorRdfReasonMediated', () => {
 
           it('Should have applied further reasoning', () => {
             const { status } = data;
-            expect(status.type).toEqual('partial');
-            const { patterns } = <IPartialReasonedStatus> status;
-            expect(patterns.size).toEqual(2);
+            expect(status.type).toBe('partial');
+            const { patterns } = <IPartialReasonedStatus>status;
+            expect(patterns.size).toBe(2);
           });
         });
       });

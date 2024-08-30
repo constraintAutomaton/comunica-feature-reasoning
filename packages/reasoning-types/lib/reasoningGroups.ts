@@ -1,7 +1,7 @@
-import type { IActionContext, IDataDestination, IDataSource } from '@comunica/types';
+import type { IActionContext, IDataDestination, IQuerySourceWrapper } from '@comunica/types';
 import type * as RDF from '@rdfjs/types';
 
-export type IDatasetFactory = () => IDataSource & IDataDestination;
+export type IDatasetFactory = () => IQuerySourceWrapper & IDataDestination;
 
 export interface IReasonedSource {
   type: 'full';
@@ -23,7 +23,7 @@ export interface IPartialReasonedStatus {
 export type IReasonStatus = IReasonedSource | IUnreasonedSource;
 
 export interface IReasonGroup {
-  dataset: IDataSource & IDataDestination;
+  dataset: IQuerySourceWrapper & IDataDestination;
   status: IReasonStatus | IPartialReasonedStatus;
   context: IActionContext;
 }

@@ -18,12 +18,12 @@ describe('ActorOptimizeRuleRemoveFalseConclusion', () => {
     });
 
     it('should test', () => {
-      return expect(actor.test({ rules: fromArray([]), context: new ActionContext() })).resolves.toEqual(true);
+      return expect(actor.test({ rules: fromArray([]), context: new ActionContext() })).resolves.toBe(true);
     });
 
     it('should run on an empty ruleset', async() => {
       const { rules } = await actor.run({ rules: fromArray([]), context: new ActionContext() });
-      expect(await rules.toArray()).toEqual([]);
+      await expect(rules.toArray()).resolves.toEqual([]);
     });
 
     it('should run on an empty normal rules', async() => {
@@ -31,9 +31,8 @@ describe('ActorOptimizeRuleRemoveFalseConclusion', () => {
         ruleType: 'premise-conclusion',
         premise: [],
         conclusion: [],
-      }]),
-      context: new ActionContext() });
-      expect(await rules.toArray()).toEqual([{
+      }]), context: new ActionContext() });
+      await expect(rules.toArray()).resolves.toEqual([{
         ruleType: 'premise-conclusion',
         premise: [],
         conclusion: [],
@@ -45,9 +44,8 @@ describe('ActorOptimizeRuleRemoveFalseConclusion', () => {
         ruleType: 'rdfs',
         premise: [],
         conclusion: false,
-      }]),
-      context: new ActionContext() });
-      expect(await rules.toArray()).toEqual([]);
+      }]), context: new ActionContext() });
+      await expect(rules.toArray()).resolves.toEqual([]);
     });
 
     it('should run on rules with a mix of rules', async() => {
@@ -59,9 +57,8 @@ describe('ActorOptimizeRuleRemoveFalseConclusion', () => {
         ruleType: 'rdfs',
         premise: [],
         conclusion: false,
-      }]),
-      context: new ActionContext() });
-      expect(await rules.toArray()).toEqual([{
+      }]), context: new ActionContext() });
+      await expect(rules.toArray()).resolves.toEqual([{
         ruleType: 'premise-conclusion',
         premise: [],
         conclusion: [],

@@ -1,18 +1,23 @@
 import type {
-  IActionRdfReason, IActorRdfReasonOutput, MediatorRdfReason,
+  IActionRdfReason,
+  IActorRdfReasonOutput,
+  MediatorRdfReason,
 } from '@comunica/bus-rdf-reason';
 import type { IActionRdfUpdateQuadsIntercept } from '@comunica/bus-rdf-update-quads-intercept';
-import { KeysRdfResolveQuadPattern, KeysRdfUpdateQuads } from '@comunica/context-entries';
+import { KeysRdfUpdateQuads } from '@comunica/context-entries';
 import { ActionContext, Bus } from '@comunica/core';
 import { KeysRdfReason } from '@comunica/reasoning-context-entries';
-import { mediatorRdfResolveQuadPattern, mediatorRdfUpdateQuads } from '@comunica/reasoning-mocks';
+import { mediatorRdfUpdateQuads } from '@comunica/reasoning-mocks';
 import type { IReasonGroup } from '@comunica/reasoning-types';
-import type { IActionContext } from '@comunica/types';
+import type { IActionContext, IQuerySource } from '@comunica/types';
 import type * as RDF from '@rdfjs/types';
 import { fromArray } from 'asynciterator';
 import { promisifyEventEmitter } from 'event-emitter-promisify';
 import { Store, DataFactory } from 'n3';
 import { ActorRdfUpdateQuadsInterceptReasoned } from '../lib';
+import { KeysQueryOperation } from '@comunica/context-entries';
+import { generateSource } from '@comunica/reasoning-mocks';
+
 
 const { namedNode, quad, defaultGraph } = DataFactory;
 describe('ActorRdfUpdateQuadsInterceptReasoned', () => {
@@ -41,12 +46,12 @@ describe('ActorRdfUpdateQuadsInterceptReasoned', () => {
       destination = new Store();
       implicitDestination = new Store();
       reasonGroup = {
-        dataset: implicitDestination,
+        dataset: { source: generateSource(source), value: implicitDestination },
         status: { type: 'full', reasoned: false },
         context: new ActionContext(),
       };
       context = new ActionContext({
-        [KeysRdfResolveQuadPattern.sources.name]: [ source, destination ],
+        [KeysQueryOperation.querySources.name]: [{ source: generateSource(source) }, { source: generateSource(destination) }],
         [KeysRdfUpdateQuads.destination.name]: destination,
         [KeysRdfReason.data.name]: reasonGroup,
       });
@@ -54,46 +59,48 @@ describe('ActorRdfUpdateQuadsInterceptReasoned', () => {
       actor = new ActorRdfUpdateQuadsInterceptReasoned({
         name: 'actor',
         bus,
-        mediatorRdfReason: <MediatorRdfReason> <any> {
+        mediatorRdfReason: <MediatorRdfReason><any>{
           async mediate(_action: IActionRdfReason): Promise<IActorRdfReasonOutput> {
             return {
               async execute() {
                 insertedDataset = new Store();
                 deletedDataset = new Store();
 
-                if (_action?.updates?.quadStreamInsert)
-                { await promisifyEventEmitter(insertedDataset.import(_action.updates.quadStreamInsert)); }
-                if (_action?.updates?.quadStreamDelete)
-                { await promisifyEventEmitter(deletedDataset.import(_action.updates.quadStreamDelete)); }
+                if (_action?.updates?.quadStreamInsert) {
+                  await promisifyEventEmitter(insertedDataset.import(_action.updates.quadStreamInsert));
+                }
+                if (_action?.updates?.quadStreamDelete) {
+                  const event = deletedDataset.import(_action.updates.quadStreamDelete);
+                  await promisifyEventEmitter(event);
+                }
               },
             };
           },
         },
-        mediatorRdfResolveQuadPattern,
         mediatorRdfUpdateQuads,
       });
     });
 
     it('should test true if source and destination are provided', () => {
-      return expect(actor.test({ context })).resolves.toEqual(true);
+      return expect(actor.test({ context })).resolves.toBe(true);
     });
 
     it('should reject if a destination is not provided provided', () => {
       return expect(actor.test({
         context: new ActionContext({
-          [KeysRdfResolveQuadPattern.source.name]: source,
+          [KeysQueryOperation.querySources.name]: generateSource(source),
         }),
-      })).rejects.toThrowError();
+      })).rejects.toThrow();
     });
 
-    it('should run', async() => {
+    it('should run', async () => {
       execute = (await actor.run({ context })).execute;
       await execute();
       expect(destination.getQuads(null, null, null, null)).toEqual([]);
     });
 
     describe('Performing inserts', () => {
-      beforeEach(async() => {
+      beforeEach(async () => {
         action = {
           context,
           quadStreamInsert: fromArray([
@@ -109,7 +116,7 @@ describe('ActorRdfUpdateQuadsInterceptReasoned', () => {
       });
 
       describe('Post running execute', () => {
-        beforeEach(async() => {
+        beforeEach(async () => {
           await execute();
         });
 
@@ -122,7 +129,7 @@ describe('ActorRdfUpdateQuadsInterceptReasoned', () => {
     });
 
     describe('Performing deletes', () => {
-      beforeEach(async() => {
+      beforeEach(async () => {
         quads = [
           quad(namedNode('s'), namedNode('p'), namedNode('o'), namedNode('g')),
           quad(namedNode('s1'), namedNode('p'), namedNode('o'), namedNode('g')),
@@ -136,7 +143,7 @@ describe('ActorRdfUpdateQuadsInterceptReasoned', () => {
       });
 
       describe('Deleting a single quad', () => {
-        beforeEach(async() => {
+        beforeEach(async () => {
           action = {
             context,
             quadStreamDelete: fromArray([
@@ -152,7 +159,7 @@ describe('ActorRdfUpdateQuadsInterceptReasoned', () => {
         });
 
         describe('Post running execute', () => {
-          beforeEach(async() => {
+          beforeEach(async () => {
             await execute();
           });
 
@@ -176,11 +183,11 @@ describe('ActorRdfUpdateQuadsInterceptReasoned', () => {
       });
 
       describe('Deleting a graph', () => {
-        beforeEach(async() => {
+        beforeEach(async () => {
           action = {
             context,
             deleteGraphs: {
-              graphs: [ namedNode('g') ],
+              graphs: [namedNode('g')],
               requireExistence: true,
               dropGraphs: true,
             },
@@ -194,7 +201,7 @@ describe('ActorRdfUpdateQuadsInterceptReasoned', () => {
         });
 
         describe('Post running execute', () => {
-          beforeEach(async() => {
+          beforeEach(async () => {
             await execute();
           });
 
@@ -218,7 +225,7 @@ describe('ActorRdfUpdateQuadsInterceptReasoned', () => {
       });
 
       describe('Deleting named graph', () => {
-        beforeEach(async() => {
+        beforeEach(async () => {
           action = {
             context,
             deleteGraphs: {
@@ -236,7 +243,7 @@ describe('ActorRdfUpdateQuadsInterceptReasoned', () => {
         });
 
         describe('Post running execute', () => {
-          beforeEach(async() => {
+          beforeEach(async () => {
             await execute();
           });
 
@@ -260,7 +267,7 @@ describe('ActorRdfUpdateQuadsInterceptReasoned', () => {
       });
 
       describe('Deleting all graphs', () => {
-        beforeEach(async() => {
+        beforeEach(async () => {
           action = {
             context,
             deleteGraphs: {
@@ -278,7 +285,7 @@ describe('ActorRdfUpdateQuadsInterceptReasoned', () => {
         });
 
         describe('Post running execute', () => {
-          beforeEach(async() => {
+          beforeEach(async () => {
             await execute();
           });
 
@@ -289,7 +296,7 @@ describe('ActorRdfUpdateQuadsInterceptReasoned', () => {
       });
 
       describe('Deleting default graph', () => {
-        beforeEach(async() => {
+        beforeEach(async () => {
           action = {
             context,
             deleteGraphs: {
@@ -307,7 +314,7 @@ describe('ActorRdfUpdateQuadsInterceptReasoned', () => {
         });
 
         describe('Post running execute', () => {
-          beforeEach(async() => {
+          beforeEach(async () => {
             await execute();
           });
 

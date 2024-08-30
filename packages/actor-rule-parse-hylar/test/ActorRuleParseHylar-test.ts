@@ -1,5 +1,5 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import type { IActionAbstractMediaTyped } from '@comunica/actor-abstract-mediatyped';
 import type { IActionRuleParse } from '@comunica/bus-rule-parse';
 import { ActionContext, Bus } from '@comunica/core';
@@ -44,12 +44,12 @@ describe('ActorRuleParseHyLAR', () => {
     });
 
     it('should test', async() => {
-      expect(await actor.test(createMediaTypedAction('rdfs'))).toEqual({ handle: true });
+      await expect(actor.test(createMediaTypedAction('rdfs'))).resolves.toEqual({ handle: true });
     });
 
     it('Should parse all owl2rl rules', async() => {
       const { data } = await actor.runHandle(createAction('owl2rl'), 'hylar', new ActionContext({}));
-      expect(await arrayifyStream(data)).toHaveLength(52);
+      await expect(arrayifyStream(data)).resolves.toHaveLength(52);
     });
 
     it('should run', async() => {
@@ -60,7 +60,7 @@ describe('ActorRuleParseHyLAR', () => {
 
       const rules: Rule[] = await arrayifyStream(data);
       expect(rules).toHaveLength(1);
-      expect(rules[0].ruleType).toEqual('rdfs');
+      expect(rules[0].ruleType).toBe('rdfs');
       expect((<any> rules[0]).premise).toBeRdfIsomorphic([
         quad(variable('uuu'), variable('aaa'), variable('yyy'), new DefaultGraph()),
       ]);

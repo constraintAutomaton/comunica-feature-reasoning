@@ -1,7 +1,8 @@
 import type { MediatorRdfReason } from '@comunica/bus-rdf-reason';
 import { getContextWithImplicitDataset, setUnionSource } from '@comunica/bus-rdf-reason';
 import type {
-  IActionRdfResolveQuadPatternIntercept, IActorRdfResolveQuadPatternInterceptArgs,
+  IActionRdfResolveQuadPatternIntercept,
+  IActorRdfResolveQuadPatternInterceptArgs,
 } from '@comunica/bus-rdf-resolve-quad-pattern-intercept';
 import { ActorRdfResolveQuadPatternIntercept } from '@comunica/bus-rdf-resolve-quad-pattern-intercept';
 
@@ -30,4 +31,3 @@ export class ActorRdfResolveQuadPatternInterceptReasoned extends ActorRdfResolve
 interface IActorRdfResolveQuadPatternInterceptReasonedArgs extends IActorRdfResolveQuadPatternInterceptArgs {
   mediatorRdfReason: MediatorRdfReason;
 }
-

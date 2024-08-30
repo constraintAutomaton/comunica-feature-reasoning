@@ -40,7 +40,9 @@ describe('ActorRuleResolveHypermedia', () => {
     });
 
     it('should not be able to create new ActorRuleResolveHypermedia objects without \'new\'', () => {
-      expect(() => { (<any> ActorRuleResolveHypermedia)(); }).toThrow();
+      expect(() => {
+        (<any> ActorRuleResolveHypermedia)();
+      }).toThrow();
     });
   });
 
@@ -116,7 +118,7 @@ describe('ActorRuleResolveHypermedia', () => {
 
       describe('getSource', () => {
         it('should return a MediatedRuleSource', async() => {
-          expect(await actor.getSource(context)).toBeInstanceOf(MediatedRuleSource);
+          await expect(actor.getSource(context)).resolves.toBeInstanceOf(MediatedRuleSource);
         });
 
         it('should cache the source', async() => {
@@ -126,12 +128,16 @@ describe('ActorRuleResolveHypermedia', () => {
           const source2 = await actor.getSource(new ActionContext(
             { [KeysRdfReason.rules.name]: 'my-nested-rules' },
           ), pattern);
-          expect(await actor.getSource(new ActionContext(
+
+          const source1Request = await actor.getSource(new ActionContext(
             { [KeysRdfReason.rules.name]: 'my-unnested-rules' },
-          ), pattern)).toBe(source1);
-          expect(await actor.getSource(new ActionContext(
+          ), pattern);
+          expect(source1Request).toBe(source1);
+
+          const source2Request = await actor.getSource(new ActionContext(
             { [KeysRdfReason.rules.name]: 'my-nested-rules' },
-          ), pattern)).toBe(source2);
+          ), pattern);
+          expect(source2Request).toBe(source2);
         });
 
         it('should cache the source and allow invalidation for a specific url', async() => {
@@ -141,21 +147,25 @@ describe('ActorRuleResolveHypermedia', () => {
           const source2 = await actor.getSource(new ActionContext(
             { [KeysRdfReason.rules.name]: 'my-nested-rules' },
           ), pattern);
-          expect(await actor.getSource(new ActionContext(
+          const source1Request = await actor.getSource(new ActionContext(
             { [KeysRdfReason.rules.name]: 'my-unnested-rules' },
-          ), pattern)).toBe(source1);
-          expect(await actor.getSource(new ActionContext(
+          ), pattern);
+          expect(source1Request).toBe(source1);
+          const source2Request = await actor.getSource(new ActionContext(
             { [KeysRdfReason.rules.name]: 'my-nested-rules' },
-          ), pattern)).toBe(source2);
+          ), pattern);
+          expect(source2Request).toBe(source2);
 
           listener({ url: 'my-unnested-rules' });
 
-          expect(await actor.getSource(new ActionContext(
+          const source1ReRequest = await actor.getSource(new ActionContext(
             { [KeysRdfReason.rules.name]: 'my-unnested-rules' },
-          ), pattern)).not.toBe(source1);
-          expect(await actor.getSource(new ActionContext(
+          ), pattern);
+          expect(source1ReRequest).not.toBe(source1);
+          const source2ReRequest = await actor.getSource(new ActionContext(
             { [KeysRdfReason.rules.name]: 'my-nested-rules' },
-          ), pattern)).toBe(source2);
+          ), pattern);
+          expect(source2ReRequest).toBe(source2);
         });
 
         it('should cache the source and allow invalidation for all urls', async() => {
@@ -165,21 +175,27 @@ describe('ActorRuleResolveHypermedia', () => {
           const source2 = await actor.getSource(new ActionContext(
             { [KeysRdfReason.rules.name]: 'my-nested-rules' },
           ), pattern);
-          expect(await actor.getSource(new ActionContext(
+
+          const source1Request = await actor.getSource(new ActionContext(
             { [KeysRdfReason.rules.name]: 'my-unnested-rules' },
-          ), pattern)).toBe(source1);
-          expect(await actor.getSource(new ActionContext(
+          ), pattern);
+          expect(source1Request).toBe(source1);
+
+          const source2Request = await actor.getSource(new ActionContext(
             { [KeysRdfReason.rules.name]: 'my-nested-rules' },
-          ), pattern)).toBe(source2);
+          ), pattern);
+          expect(source2Request).toBe(source2);
 
           listener({});
 
-          expect(await actor.getSource(new ActionContext(
+          const source1ReRequest = await actor.getSource(new ActionContext(
             { [KeysRdfReason.rules.name]: 'my-unnested-rules' },
-          ), pattern)).not.toBe(source1);
-          expect(await actor.getSource(new ActionContext(
+          ), pattern);
+          expect(source1ReRequest).not.toBe(source1);
+          const source2ReRequest = await actor.getSource(new ActionContext(
             { [KeysRdfReason.rules.name]: 'my-nested-rules' },
-          ), pattern)).not.toBe(source2);
+          ), pattern);
+          expect(source2ReRequest).not.toBe(source2);
         });
 
         it('should not cache the source with cache size 0', async() => {
@@ -197,19 +213,21 @@ describe('ActorRuleResolveHypermedia', () => {
           const source2 = await actor.getSource(new ActionContext(
             { [KeysRdfReason.rules.name]: 'my-nested-rules' },
           ), pattern);
-          expect(await actor.getSource(new ActionContext(
+          const source1Request = await actor.getSource(new ActionContext(
             { [KeysRdfReason.rules.name]: 'my-unnested-rules' },
-          ), pattern)).not.toBe(source1);
-          expect(await actor.getSource(new ActionContext(
+          ), pattern);
+          expect(source1Request).not.toBe(source1);
+          const source2Request = actor.getSource(new ActionContext(
             { [KeysRdfReason.rules.name]: 'my-nested-rules' },
-          ), pattern)).not.toBe(source2);
+          ), pattern);
+          expect(source2Request).not.toBe(source2);
         });
       });
 
       describe('run', () => {
         it('should return a rule stream', async() => {
           const { data } = await actor.run({ context });
-          expect(await data.toArray()).toHaveLength(2);
+          await expect(data.toArray()).resolves.toHaveLength(2);
         });
 
         it('Should error if context does not have a rule reference', async() => {

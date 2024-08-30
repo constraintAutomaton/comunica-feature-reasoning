@@ -3,34 +3,39 @@
   "version": "0.2.0",
   "description": "A comunica bus for reasoning over RDF data",
   "lsd:module": true,
-  "main": "lib/index.js",
-  "typings": "lib/index",
+  "license": "MIT",
+  "homepage": "https://comunica.dev/",
   "repository": {
     "type": "git",
     "url": "https://github.com/comunica/comunica-feature-reasoning.git",
     "directory": "packages/bus-rdf-reason"
   },
-  "publishConfig": {
-    "access": "public"
+  "bugs": {
+    "url": "https://github.com/comunica/comunica-feature-reasoning/issues"
   },
   "keywords": [
     "comunica",
     "bus",
     "rdf-reason"
   ],
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/comunica/comunica-feature-reasoning/issues"
+  "main": "lib/index.js",
+  "typings": "lib/index",
+  "publishConfig": {
+    "access": "public"
   },
-  "homepage": "https://comunica.dev/",
   "files": [
     "components",
     "lib/**/*.d.ts",
     "lib/**/*.js"
   ],
+  "scripts": {
+    "build": "npm run build:ts && npm run build:components",
+    "build:ts": "node \"../../node_modules/typescript/bin/tsc\"",
+    "build:components": "componentsjs-generator"
+  },
   "dependencies": {
     "@comunica/bus-optimize-rule": "^0.2.0",
-    "@comunica/bus-rdf-resolve-quad-pattern": "^2.10.0",
+    "@comunica/bus-query-source-identify": "3.2.0",
     "@comunica/bus-rdf-update-quads": "^3.2.0",
     "@comunica/bus-rule-resolve": "^0.2.0",
     "@comunica/context-entries": "^3.2.0",
@@ -42,11 +47,6 @@
     "asynciterator": "^3.9.0",
     "rdf-terms": "^1.9.0",
     "sparqlalgebrajs": "^4.3.0"
-  },
-  "scripts": {
-    "build": "npm run build:ts && npm run build:components",
-    "build:ts": "node \"../../node_modules/typescript/bin/tsc\"",
-    "build:components": "componentsjs-generator"
   },
   "gitHead": "17b61cff21721451c6cc822377f59e34c53fe9e8"
 }

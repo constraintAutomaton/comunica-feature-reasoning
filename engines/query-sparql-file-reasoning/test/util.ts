@@ -1,4 +1,4 @@
-import { resolve } from 'path';
+import { resolve } from 'node:path';
 import { Polly } from '@pollyjs/core';
 import { setupPolly } from 'setup-polly-jest';
 

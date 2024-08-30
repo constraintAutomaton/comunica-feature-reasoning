@@ -1,5 +1,7 @@
 import type {
-  IActionOptimizeRule, IActorOptimizeRuleArgs, IActorOptimizeRuleOutput,
+  IActionOptimizeRule,
+  IActorOptimizeRuleArgs,
+  IActorOptimizeRuleOutput,
 } from '@comunica/bus-optimize-rule';
 import { ActorOptimizeRule } from '@comunica/bus-optimize-rule';
 import type { IActorTest } from '@comunica/core';
@@ -111,7 +113,7 @@ export function matchPatternMappings(pattern: RDF.Quad | Algebra.Pattern, quad: 
     if (term.termType !== 'Variable') {
       return term.equals(quad[key]);
     }
-    // eslint-disable-next-line no-return-assign
+
     return term.value in mapping ? mapping[term.value].equals(quad[key]) : (mapping[term.value] = quad[key]) && true;
   });
 }

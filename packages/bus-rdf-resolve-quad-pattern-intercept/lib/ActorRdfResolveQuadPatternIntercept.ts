@@ -1,5 +1,7 @@
 import type {
-  IActionRdfResolveQuadPattern, IActorRdfResolveQuadPatternOutput, MediatorRdfResolveQuadPattern,
+  IActionRdfResolveQuadPattern,
+  IActorRdfResolveQuadPatternOutput,
+  MediatorRdfResolveQuadPattern,
 } from '@comunica/bus-rdf-resolve-quad-pattern';
 import type { IActorArgs, IActorTest, Mediate } from '@comunica/core';
 import { Actor } from '@comunica/core';

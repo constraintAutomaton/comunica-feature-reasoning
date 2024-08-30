@@ -1,12 +1,15 @@
-import { KeysRdfResolveQuadPattern } from '@comunica/context-entries';
+import { KeysQueryOperation } from '@comunica/context-entries';
 import { ActionContext } from '@comunica/core';
 import { KeysRdfReason } from '@comunica/reasoning-context-entries';
+import { generateSource } from '@comunica/reasoning-mocks';
 import type { IReasonGroup } from '@comunica/reasoning-types';
-import type { IActionContext } from '@comunica/types';
+import type { IActionContext, IQuerySourceWrapper } from '@comunica/types';
 import type * as RDF from '@rdfjs/types';
 import { DataFactory, Store } from 'n3';
 import {
-  getExplicitSources, setImplicitSource, getContextWithImplicitDataset,
+  getExplicitSources,
+  setImplicitSource,
+  getContextWithImplicitDataset,
 } from '../lib/ActorRdfReason';
 
 const { namedNode, quad } = DataFactory;
@@ -19,7 +22,7 @@ describe('getContextWithImplicitDataset', () => {
   beforeEach(() => {
     store = new Store();
     data = {
-      dataset: store,
+      dataset: { source: generateSource(store), value: store },
       status: { type: 'full', reasoned: false },
       context: new ActionContext(),
     };
@@ -27,7 +30,7 @@ describe('getContextWithImplicitDataset', () => {
   });
 
   it('Should throw an error if there is no data object or source generator', () => {
-    expect(() => getContextWithImplicitDataset(new ActionContext())).toThrowError();
+    expect(() => getContextWithImplicitDataset(new ActionContext())).toThrow();
   });
 
   it('Should keep the original data key object if one is present', () => {
@@ -35,7 +38,7 @@ describe('getContextWithImplicitDataset', () => {
     let newContext = getContextWithImplicitDataset(context);
 
     expect(context).toEqual(newContext);
-    expect(newContext.get<IReasonGroup>(KeysRdfReason.data)?.dataset === store).toEqual(true);
+    expect(newContext.get<IReasonGroup>(KeysRdfReason.data)?.dataset.source.referenceValue === store).toBe(true);
 
     context = new ActionContext({
       [KeysRdfReason.data.name]: data,
@@ -45,7 +48,7 @@ describe('getContextWithImplicitDataset', () => {
     newContext = getContextWithImplicitDataset(context);
 
     expect(context).toEqual(newContext);
-    expect(newContext.get<IReasonGroup>(KeysRdfReason.data)?.dataset === store).toEqual(true);
+    expect(newContext.get<IReasonGroup>(KeysRdfReason.data)?.dataset.source.referenceValue === store).toBe(true);
   });
 
   it('Should generate a data object if none are present', () => {
@@ -71,53 +74,35 @@ describe('getContextWithImplicitDataset', () => {
       store.addQuad(indicatorQuad);
     });
 
-    it('With no original source or sources', () => {
+    it('With no original querySources', () => {
       const newContext = setImplicitSource(context);
-      expect(newContext.get<IReasonGroup>(KeysRdfReason.data)?.dataset).toBeRdfDatasetContaining(indicatorQuad);
-      expect(newContext.get(KeysRdfResolveQuadPattern.source)).toBeRdfDatasetContaining(indicatorQuad);
-      expect(newContext.has(KeysRdfResolveQuadPattern.sources)).toEqual(false);
+      expect(newContext.get<IReasonGroup>(KeysRdfReason.data)?.dataset.source.referenceValue).toBeRdfDatasetContaining(indicatorQuad);
+      expect(newContext.get<IQuerySourceWrapper>(KeysQueryOperation.querySources)?.source.referenceValue).toBeRdfDatasetContaining(indicatorQuad);
     });
 
-    it('With a original source but no sources', () => {
-      const newContext = setImplicitSource(context.set(KeysRdfResolveQuadPattern.source, new Store()));
-      expect(newContext.get<IReasonGroup>(KeysRdfReason.data)?.dataset).toBeRdfDatasetContaining(indicatorQuad);
-      expect(newContext.get(KeysRdfResolveQuadPattern.source)).toBeRdfDatasetContaining(indicatorQuad);
-      expect(newContext.has(KeysRdfResolveQuadPattern.sources)).toEqual(false);
-    });
-
-    it('With original sources but no source', () => {
-      const newContext = setImplicitSource(
-        context.set(KeysRdfResolveQuadPattern.sources, [ new Store(), new Store() ]),
-      );
-      expect(newContext.get<IReasonGroup>(KeysRdfReason.data)?.dataset).toBeRdfDatasetContaining(indicatorQuad);
-      expect(newContext.get(KeysRdfResolveQuadPattern.source)).toBeRdfDatasetContaining(indicatorQuad);
-      expect(newContext.has(KeysRdfResolveQuadPattern.sources)).toEqual(false);
-    });
-
-    it('With original sources and source', () => {
-      const newContext = setImplicitSource(
-        context
-          .set(KeysRdfResolveQuadPattern.sources, [ new Store(), new Store() ])
-          .set(KeysRdfResolveQuadPattern.source, new Store()),
-      );
-      expect(newContext.get<IReasonGroup>(KeysRdfReason.data)?.dataset).toBeRdfDatasetContaining(indicatorQuad);
-      expect(newContext.get(KeysRdfResolveQuadPattern.source)).toBeRdfDatasetContaining(indicatorQuad);
-      expect(newContext.has(KeysRdfResolveQuadPattern.sources)).toEqual(false);
+    it('With a original querySources', () => {
+      const newContext = setImplicitSource(context.set(KeysQueryOperation.querySources, new Store()));
+      expect(newContext.get<IReasonGroup>(KeysRdfReason.data)?.dataset.source.referenceValue).toBeRdfDatasetContaining(indicatorQuad);
+      expect(newContext.get<IQuerySourceWrapper>(KeysQueryOperation.querySources)?.source.referenceValue).toBeRdfDatasetContaining(indicatorQuad);
     });
   });
 
   describe('getExplicitSources', () => {
-    expect(getExplicitSources(new ActionContext())).toEqual([]);
-    expect(getExplicitSources(new ActionContext({
-      [KeysRdfResolveQuadPattern.source.name]: 'source1',
-    }))).toEqual([ 'source1' ]);
-    expect(getExplicitSources(new ActionContext({
-      [KeysRdfResolveQuadPattern.sources.name]: [ 'source0', 'source2' ],
-    }))).toEqual([ 'source0', 'source2' ]);
-    // TODO: Address this case
-    // expect(getExplicitSources(new ActionContext({
-    //   [KeysRdfResolveQuadPattern.source.name]: 'source1',
-    //   [KeysRdfResolveQuadPattern.sources.name]: ['source0', 'source2']
-    // }))).toEqual(['source0', 'source2']);
+    it('explicit sources should be Queryable', () => {
+      expect(getExplicitSources(new ActionContext())).toEqual([]);
+      const contextOneEntry = new ActionContext({
+        [KeysQueryOperation.querySources.name]: [ 'source1' ],
+      });
+      expect(getExplicitSources(contextOneEntry)).toEqual([ 'source1' ]);
+      const context = new ActionContext({
+        [KeysQueryOperation.querySources.name]: [ 'source0', 'source2' ],
+      });
+      expect(getExplicitSources(context)).toEqual([ 'source0', 'source2' ]);
+      // TODO: Address this case
+      // expect(getExplicitSources(new ActionContext({
+      //   [KeysRdfResolveQuadPattern.source.name]: 'source1',
+      //   [KeysRdfResolveQuadPattern.sources.name]: ['source0', 'source2']
+      // }))).toEqual(['source0', 'source2']);
+    });
   });
 });

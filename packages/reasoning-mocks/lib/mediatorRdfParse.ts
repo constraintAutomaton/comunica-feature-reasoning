@@ -1,5 +1,8 @@
 import type {
-  IActionRdfParseHandle, IActorOutputRdfParseHandle, IActorTestRdfParseHandle, MediatorRdfParseHandle,
+  IActionRdfParseHandle,
+  IActorOutputRdfParseHandle,
+  IActorTestRdfParseHandle,
+  MediatorRdfParseHandle,
 } from '@comunica/bus-rdf-parse';
 import type { Actor, IActorReply } from '@comunica/core';
 import 'jest-rdf';
@@ -8,7 +11,10 @@ import { StreamParser } from 'n3';
 export const mediatorRdfParse = <MediatorRdfParseHandle>{
   publish(action: IActionRdfParseHandle): IActorReply<
   Actor<IActionRdfParseHandle, IActorTestRdfParseHandle, IActorOutputRdfParseHandle>,
-  IActionRdfParseHandle, IActorTestRdfParseHandle, IActorOutputRdfParseHandle>[] {
+  IActionRdfParseHandle,
+IActorTestRdfParseHandle,
+IActorOutputRdfParseHandle
+>[] {
     return [];
   },
   async mediate(action: IActionRdfParseHandle): Promise<IActorOutputRdfParseHandle> {

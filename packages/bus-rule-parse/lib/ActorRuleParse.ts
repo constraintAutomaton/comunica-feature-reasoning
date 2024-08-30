@@ -1,15 +1,4 @@
-import type { IActionAbstractMediaTyped,
-  IActionAbstractMediaTypedHandle, IActionAbstractMediaTypedMediaTypeFormats,
-  IActionAbstractMediaTypedMediaTypes,
-  IActorArgsMediaTyped,
-  IActorOutputAbstractMediaTyped,
-  IActorOutputAbstractMediaTypedHandle,
-  IActorOutputAbstractMediaTypedMediaTypeFormats,
-  IActorOutputAbstractMediaTypedMediaTypes,
-  IActorTestAbstractMediaTyped,
-  IActorTestAbstractMediaTypedHandle,
-  IActorTestAbstractMediaTypedMediaTypeFormats,
-  IActorTestAbstractMediaTypedMediaTypes } from '@comunica/actor-abstract-mediatyped';
+import type { IActionAbstractMediaTyped, IActionAbstractMediaTypedHandle, IActionAbstractMediaTypedMediaTypeFormats, IActionAbstractMediaTypedMediaTypes, IActorArgsMediaTyped, IActorOutputAbstractMediaTyped, IActorOutputAbstractMediaTypedHandle, IActorOutputAbstractMediaTypedMediaTypeFormats, IActorOutputAbstractMediaTypedMediaTypes, IActorTestAbstractMediaTyped, IActorTestAbstractMediaTypedHandle, IActorTestAbstractMediaTypedMediaTypeFormats, IActorTestAbstractMediaTypedMediaTypes } from '@comunica/actor-abstract-mediatyped';
 import {
   ActorAbstractMediaTyped,
 } from '@comunica/actor-abstract-mediatyped';
@@ -71,10 +60,19 @@ export type IActorRuleParseArgs = IActorArgsMediaTyped<IActionRuleParse, IActorT
 
 // TODO: See if we can emove this
 export type MediatorRdfParseHandle = Mediate<
-IActionRuleParseHandle, IActorOutputRuleParseHandle, IActorTestRuleParseHandle>;
+IActionRuleParseHandle,
+IActorOutputRuleParseHandle,
+IActorTestRuleParseHandle
+>;
 
 export type MediatorRuleParseMediaTypes = Mediate<
-IActionRuleParseMediaTypes, IActorOutputRuleParseMediaTypes, IActorTestRuleParseMediaTypes>;
+IActionRuleParseMediaTypes,
+IActorOutputRuleParseMediaTypes,
+IActorTestRuleParseMediaTypes
+>;
 
 export type MediatorRuleParseMediaTypeFormats = Mediate<
-IActionRuleParseMediaTypeFormats, IActorOutputRuleParseMediaTypeFormats, IActorTestRuleParseMediaTypeFormats>;
+IActionRuleParseMediaTypeFormats,
+IActorOutputRuleParseMediaTypeFormats,
+IActorTestRuleParseMediaTypeFormats
+>;
