@@ -118,7 +118,8 @@ describe('ActorRuleResolveHypermedia', () => {
 
       describe('getSource', () => {
         it('should return a MediatedRuleSource', async() => {
-          await expect(actor.getSource(context)).resolves.toBeInstanceOf(MediatedRuleSource);
+          const source = await actor.getSource(context);
+           expect(source).toBeInstanceOf(MediatedRuleSource);
         });
 
         it('should cache the source', async() => {

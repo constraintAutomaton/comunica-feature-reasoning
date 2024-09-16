@@ -19,7 +19,7 @@ export class ActorContextPreprocessReasoningDefaults extends ActorContextPreproc
   public async run(action: IAction): Promise<IActorContextPreprocessOutput> {
     return {
       context: action.context
-        .setDefault(KeysRdfReason.implicitDatasetFactory, () => new Store()),
+        .setDefault(KeysRdfReason.implicitDatasetFactory, () => {todo!}),
     };
   }
 }

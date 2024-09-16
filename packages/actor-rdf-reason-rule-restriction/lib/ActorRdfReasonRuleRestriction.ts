@@ -35,7 +35,7 @@ export class ActorRdfReasonRuleRestriction extends ActorRdfReasonMediated {
       // TODO: Handle rule assertions better
       const quadStreamInsert = evaluateRuleSet(<any> rules, this.unionQuadSource(context).match);
       const { execute } = await this.runImplicitUpdate({ quadStreamInsert: quadStreamInsert.clone(), context });
-      await Promise.all([ execute(), await promisifyEventEmitter(store.import(quadStreamInsert.clone())) ]);
+      await Promise.all([ execute(), promisifyEventEmitter(store.import(quadStreamInsert.clone())) ]);
     } while (store.size > size);
   }
 }

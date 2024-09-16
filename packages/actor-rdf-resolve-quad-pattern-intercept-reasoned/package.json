@@ -36,7 +36,8 @@
   },
   "dependencies": {
     "@comunica/bus-rdf-reason": "^0.2.0",
-    "@comunica/bus-rdf-resolve-quad-pattern-intercept": "^0.2.0"
+    "@comunica/bus-rdf-resolve-quad-pattern-intercept": "^0.2.0",
+    "@comunica/context-entries": "^3.2.0"
   },
   "gitHead": "17b61cff21721451c6cc822377f59e34c53fe9e8"
 }

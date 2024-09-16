@@ -35,7 +35,8 @@
   },
   "dependencies": {
     "@comunica/bus-optimize-rule": "^0.2.0",
-    "@comunica/bus-query-source-identify": "3.2.0",
+    "@comunica/bus-query-source-identify": "^3.2.0",
+    "@comunica/bus-query-process": "^3.2.0",
     "@comunica/bus-rdf-update-quads": "^3.2.0",
     "@comunica/bus-rule-resolve": "^0.2.0",
     "@comunica/context-entries": "^3.2.0",

@@ -24,7 +24,8 @@ export class ActorRdfResolveQuadPatternInterceptReasoned extends ActorRdfResolve
     const { execute } = await this.mediatorRdfReason.mediate({ context, pattern: action.pattern });
     // TODO: Put this in a lock
     await execute();
-    return { ...action, context: setUnionSource(context) };
+    const contextUnionSources = setUnionSource(context);
+    return { ...action, context: contextUnionSources };
   }
 }
 

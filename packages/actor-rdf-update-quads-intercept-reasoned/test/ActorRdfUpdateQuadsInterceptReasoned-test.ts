@@ -9,7 +9,7 @@ import { ActionContext, Bus } from '@comunica/core';
 import { KeysRdfReason } from '@comunica/reasoning-context-entries';
 import { mediatorRdfUpdateQuads } from '@comunica/reasoning-mocks';
 import type { IReasonGroup } from '@comunica/reasoning-types';
-import type { IActionContext, IQuerySource } from '@comunica/types';
+import type { IActionContext } from '@comunica/types';
 import type * as RDF from '@rdfjs/types';
 import { fromArray } from 'asynciterator';
 import { promisifyEventEmitter } from 'event-emitter-promisify';
@@ -17,7 +17,6 @@ import { Store, DataFactory } from 'n3';
 import { ActorRdfUpdateQuadsInterceptReasoned } from '../lib';
 import { KeysQueryOperation } from '@comunica/context-entries';
 import { generateSource } from '@comunica/reasoning-mocks';
-
 
 const { namedNode, quad, defaultGraph } = DataFactory;
 describe('ActorRdfUpdateQuadsInterceptReasoned', () => {

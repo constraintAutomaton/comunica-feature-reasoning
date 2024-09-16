@@ -1,10 +1,10 @@
 import type {
   IActionRdfResolveQuadPattern,
 } from '@comunica/bus-rdf-resolve-quad-pattern';
-import { KeysRdfResolveQuadPattern } from '@comunica/context-entries';
+import { KeysQueryOperation } from '@comunica/context-entries';
 import { ActionContext, Bus } from '@comunica/core';
 import { KeysRdfReason } from '@comunica/reasoning-context-entries';
-import { mediatorRdfReason, mediatorRdfResolveQuadPattern } from '@comunica/reasoning-mocks';
+import { generateSource, mediatorRdfReason } from '@comunica/reasoning-mocks';
 import { DataFactory, Store } from 'n3';
 import { Factory } from 'sparqlalgebrajs';
 import { ActorRdfResolveQuadPatternInterceptReasoned } from '../lib';
@@ -32,7 +32,6 @@ describe('ActorRdfResolveQuadPatternInterceptReasoned', () => {
         name: 'actor',
         bus,
         mediatorRdfReason,
-        mediatorRdfResolveQuadPattern,
       });
 
       const pattern = factory.createPattern(
@@ -59,13 +58,25 @@ describe('ActorRdfResolveQuadPatternInterceptReasoned', () => {
       ]);
 
       const context = new ActionContext({
-        [KeysRdfResolveQuadPattern.source.name]: source1,
-        [KeysRdfReason.implicitDatasetFactory.name]: () => new Store(),
+        [KeysQueryOperation.querySources.name]: [{source: generateSource(source1)}],
+        [KeysRdfReason.implicitDatasetFactory.name]: () => {
+          const store = new Store();
+          return {
+            source: generateSource(store),
+            value: store
+          }
+        },
       });
 
       const contextMultiSource = new ActionContext({
-        [KeysRdfResolveQuadPattern.sources.name]: [ source1, source2 ],
-        [KeysRdfReason.implicitDatasetFactory.name]: () => new Store(),
+        [KeysQueryOperation.querySources.name]: [ {source: generateSource(source1)}, {source: generateSource(source2)} ],
+        [KeysRdfReason.implicitDatasetFactory.name]: () => {
+          const store = new Store();
+          return {
+            source: generateSource(store),
+            value: store
+          }
+        },
       });
 
       action = { context, pattern };
@@ -88,20 +99,23 @@ describe('ActorRdfResolveQuadPatternInterceptReasoned', () => {
     });
 
     it('should run with implicit data', async() => {
+      const datasetStore  =new Store([
+        quad(
+          namedNode('http://example.org#Jesse'),
+          namedNode('http://example.org#a'),
+          namedNode('http://example.org#Agent'),
+        ),
+      ]);
       const { data } = await actor.run({
         ...action,
         context: action.context.set(KeysRdfReason.data, {
-          dataset: new Store([
-            quad(
-              namedNode('http://example.org#Jesse'),
-              namedNode('http://example.org#a'),
-              namedNode('http://example.org#Agent'),
-            ),
-          ]),
+          dataset:{source: generateSource(datasetStore), value: datasetStore},
         }),
       });
 
-      await expect(data.toArray()).resolves.toEqual([
+      const quads = await data.toArray();
+
+      expect(quads).toStrictEqual([
         quad(
           namedNode('http://example.org#Jesse'),
           namedNode('http://example.org#a'),
@@ -136,16 +150,17 @@ describe('ActorRdfResolveQuadPatternInterceptReasoned', () => {
     });
 
     it('should run with implicit data (multiple sources)', async() => {
+      const datasetStore  = new Store([
+        quad(
+          namedNode('http://example.org#Jesse'),
+          namedNode('http://example.org#a'),
+          namedNode('http://example.org#Agent'),
+        ),
+      ]);
       const { data } = await actor.run({
         ...action,
         context: actionMultiSource.context.set(KeysRdfReason.data, {
-          dataset: new Store([
-            quad(
-              namedNode('http://example.org#Jesse'),
-              namedNode('http://example.org#a'),
-              namedNode('http://example.org#Agent'),
-            ),
-          ]),
+          dataset: {source: generateSource(datasetStore), value: datasetStore},
         }),
       });
 

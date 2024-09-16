@@ -4,7 +4,6 @@ import { ActionContext, Bus } from '@comunica/core';
 import { KeysRdfReason } from '@comunica/reasoning-context-entries';
 import {
   mediatorOptimizeRule,
-  mediatorRdfResolveQuadPattern,
   mediatorRdfUpdateQuads,
   mediatorRuleResolve,
   generateSource,
@@ -65,7 +64,6 @@ describe('ActorRdfReasonMediated', () => {
         name: 'actor',
         bus,
         mediatorOptimizeRule,
-        mediatorRdfResolveQuadPattern,
         mediatorRdfUpdateQuads,
         mediatorRuleResolve,
       });

@@ -33,7 +33,9 @@ export function getExplicitSources(context: IActionContext): IQuerySourceWrapper
 }
 
 export function getUnionSources(context: IActionContext): IQuerySourceWrapper[] {
-  return [ ...getExplicitSources(context), getImplicitSource(context) ];
+  const explicitSources = getExplicitSources(context);
+  const implicitSource = getImplicitSource(context);
+  return [ ...explicitSources, implicitSource  ];
 }
 
 export function setImplicitDestination(context: IActionContext): IActionContext {

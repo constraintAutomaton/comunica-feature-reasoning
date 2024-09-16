@@ -1,12 +1,12 @@
 import type { IActionRdfReason, IActorRdfReasonOutput } from '@comunica/bus-rdf-reason';
 import { implicitGroupFactory } from '@comunica/bus-rdf-reason';
-import { KeysRdfResolveQuadPattern, KeysRdfUpdateQuads } from '@comunica/context-entries';
+import { KeysQueryOperation, KeysRdfUpdateQuads } from '@comunica/context-entries';
 import type { Actor, IActorTest } from '@comunica/core';
 import { ActionContext, Bus } from '@comunica/core';
 import { KeysRdfReason } from '@comunica/reasoning-context-entries';
 import {
+  generateSource,
   mediatorOptimizeRule,
-  mediatorRdfResolveQuadPattern,
   mediatorRdfUpdateQuads,
   mediatorRuleResolve,
 } from '@comunica/reasoning-mocks';
@@ -21,11 +21,11 @@ const { namedNode, quad } = DataFactory;
 
 describe('ActorRdfReasonRuleRestriction', () => {
   let bus: Bus<
-  Actor<IActionRdfReason, IActorTest, IActorRdfReasonOutput>,
-  IActionRdfReason,
-  IActorTest,
-  IActorRdfReasonOutput
->;
+    Actor<IActionRdfReason, IActorTest, IActorRdfReasonOutput>,
+    IActionRdfReason,
+    IActorTest,
+    IActorRdfReasonOutput
+  >;
 
   beforeEach(() => {
     bus = new Bus({ name: 'bus' });
@@ -43,14 +43,16 @@ describe('ActorRdfReasonRuleRestriction', () => {
         name: 'actor',
         bus,
         mediatorRdfUpdateQuads,
-        mediatorRdfResolveQuadPattern,
         mediatorRuleResolve,
         mediatorOptimizeRule,
       });
 
       data = implicitGroupFactory(
         new ActionContext({
-          [KeysRdfReason.implicitDatasetFactory.name]: () => new Store(),
+          [KeysRdfReason.implicitDatasetFactory.name]: () => {
+            const store = new Store();
+            return { source: generateSource(store), value: store }
+          },
         }),
       );
 
@@ -63,7 +65,7 @@ describe('ActorRdfReasonRuleRestriction', () => {
           [KeysRdfReason.data.name]: data,
           [KeysRdfReason.rules.name]: 'my-unnested-rules',
           [KeysRdfUpdateQuads.destination.name]: destination,
-          [KeysRdfResolveQuadPattern.source.name]: source,
+          [KeysQueryOperation.querySources.name]: [{ source: generateSource(source) }],
         }),
       };
     });
@@ -78,20 +80,21 @@ describe('ActorRdfReasonRuleRestriction', () => {
         .rejects.toThrow();
     });
 
-    it('should run with no rules and empty data', async() => {
+    it('should run with no rules and empty data', async () => {
       const { execute } = await actor.run(action);
-      await expect(execute()).resolves.toBeUndefined();
+      const resp = await execute();
+      expect(resp).toBeUndefined();
     });
 
-    it('should run with empty data', async() => {
+    it('should run with empty data', async () => {
       const { execute } = await actor.run(action);
       await execute();
       expect(source).toBeRdfIsomorphic([]);
       expect(destination).toBeRdfIsomorphic([]);
-      expect(data.dataset).toBeRdfIsomorphic([]);
+      expect((<any>data.dataset).value).toBeRdfIsomorphic([]);
     });
 
-    it('should run with with the fact Jesse a Human and produce implicit data', async() => {
+    it('should run with with the fact Jesse a Human and produce implicit data', async () => {
       source.addQuad(
         quad(
           namedNode('http://example.org#Jesse'),
@@ -102,13 +105,13 @@ describe('ActorRdfReasonRuleRestriction', () => {
 
       const { execute } = await actor.run(action);
       await execute();
-      expect(source).toBeRdfIsomorphic([ quad(
+      expect(source).toBeRdfIsomorphic([quad(
         namedNode('http://example.org#Jesse'),
         namedNode('http://example.org#a'),
         namedNode('http://example.org#Human'),
-      ) ]);
+      )]);
       expect(destination).toBeRdfIsomorphic([]);
-      expect(data.dataset).toBeRdfIsomorphic([ quad(
+      expect((<any>data.dataset).value).toBeRdfIsomorphic([quad(
         namedNode('http://example.org#Human'),
         namedNode('http://example.org#a'),
         namedNode('http://example.org#Class'),
@@ -116,10 +119,10 @@ describe('ActorRdfReasonRuleRestriction', () => {
         namedNode('http://example.org#Class'),
         namedNode('http://example.org#a'),
         namedNode('http://example.org#Class'),
-      ) ]);
+      )]);
     });
 
-    it('should run with with the facts Jesse a Human / human subset of thing and produce implicit data', async() => {
+    it('should run with with the facts Jesse a Human / human subset of thing and produce implicit data', async () => {
       source.addQuad(
         quad(
           namedNode('http://example.org#Jesse'),
@@ -139,7 +142,7 @@ describe('ActorRdfReasonRuleRestriction', () => {
       const { execute } = await actor.run(action);
       await execute();
 
-      expect(source).toBeRdfIsomorphic([ quad(
+      expect(source).toBeRdfIsomorphic([quad(
         namedNode('http://example.org#Jesse'),
         namedNode('http://example.org#a'),
         namedNode('http://example.org#Human'),
@@ -147,10 +150,10 @@ describe('ActorRdfReasonRuleRestriction', () => {
         namedNode('http://example.org#Human'),
         namedNode('http://example.org#subsetOf'),
         namedNode('http://example.org#Thing'),
-      ) ]);
+      )]);
       expect(destination).toBeRdfIsomorphic([]);
-      expect((data.dataset).size).toBe(4);
-      expect(data.dataset).toBeRdfIsomorphic([ quad(
+      expect((<any>data.dataset).value.size).toBe(4);
+      expect((<any>data.dataset).value).toBeRdfIsomorphic([quad(
         namedNode('http://example.org#Jesse'),
         namedNode('http://example.org#a'),
         namedNode('http://example.org#Thing'),
@@ -166,10 +169,10 @@ describe('ActorRdfReasonRuleRestriction', () => {
         namedNode('http://example.org#Class'),
         namedNode('http://example.org#a'),
         namedNode('http://example.org#Class'),
-      ) ]);
+      )]);
     });
 
-    it('should run with with the facts Jesse a Human / Ruben a human / human a thing to produce implicit data', async() => {
+    it('should run with with the facts Jesse a Human / Ruben a human / human a thing to produce implicit data', async () => {
       source.addQuad(
         quad(
           namedNode('http://example.org#Jesse'),
@@ -197,7 +200,7 @@ describe('ActorRdfReasonRuleRestriction', () => {
       const { execute } = await actor.run(action);
       await execute();
 
-      expect(source).toBeRdfIsomorphic([ quad(
+      expect(source).toBeRdfIsomorphic([quad(
         namedNode('http://example.org#Jesse'),
         namedNode('http://example.org#a'),
         namedNode('http://example.org#Human'),
@@ -209,10 +212,10 @@ describe('ActorRdfReasonRuleRestriction', () => {
         namedNode('http://example.org#Human'),
         namedNode('http://example.org#subsetOf'),
         namedNode('http://example.org#Thing'),
-      ) ]);
+      )]);
       expect(destination).toBeRdfIsomorphic([]);
-      expect((data.dataset).size).toBe(5);
-      expect(data.dataset).toBeRdfIsomorphic([ quad(
+      expect((<any>data.dataset).value.size).toBe(5);
+      expect((<any>data.dataset).value).toBeRdfIsomorphic([quad(
         namedNode('http://example.org#Human'),
         namedNode('http://example.org#a'),
         namedNode('http://example.org#Class'),
@@ -232,10 +235,10 @@ describe('ActorRdfReasonRuleRestriction', () => {
         namedNode('http://example.org#Ruben'),
         namedNode('http://example.org#a'),
         namedNode('http://example.org#Thing'),
-      ) ]);
+      )]);
     });
 
-    it('should run with with the facts Jesse a Human / Ruben a human to produce implicit data', async() => {
+    it('should run with with the facts Jesse a Human / Ruben a human to produce implicit data', async () => {
       source.addQuad(
         quad(
           namedNode('http://example.org#Jesse'),
@@ -255,7 +258,7 @@ describe('ActorRdfReasonRuleRestriction', () => {
       const { execute } = await actor.run(action);
       await execute();
 
-      expect(source).toBeRdfIsomorphic([ quad(
+      expect(source).toBeRdfIsomorphic([quad(
         namedNode('http://example.org#Jesse'),
         namedNode('http://example.org#a'),
         namedNode('http://example.org#Human'),
@@ -263,10 +266,10 @@ describe('ActorRdfReasonRuleRestriction', () => {
         namedNode('http://example.org#Ruben'),
         namedNode('http://example.org#a'),
         namedNode('http://example.org#Human'),
-      ) ]);
+      )]);
       expect(destination).toBeRdfIsomorphic([]);
-      expect((data.dataset).size).toBe(2);
-      expect(data.dataset).toBeRdfIsomorphic([ quad(
+      expect((<any>data.dataset).value.size).toBe(2);
+      expect((<any>data.dataset).value).toBeRdfIsomorphic([quad(
         namedNode('http://example.org#Human'),
         namedNode('http://example.org#a'),
         namedNode('http://example.org#Class'),
@@ -274,7 +277,7 @@ describe('ActorRdfReasonRuleRestriction', () => {
         namedNode('http://example.org#Class'),
         namedNode('http://example.org#a'),
         namedNode('http://example.org#Class'),
-      ) ]);
+      )]);
     });
 
     describe('Using repeated var rules', () => {
@@ -282,7 +285,7 @@ describe('ActorRdfReasonRuleRestriction', () => {
         action.context = action.context.set(KeysRdfReason.rules, 'my-repeated-var-rules');
       });
 
-      it('should run with with the fact Jesse a Human and produce implicit data', async() => {
+      it('should run with with the fact Jesse a Human and produce implicit data', async () => {
         source.addQuad(
           quad(
             namedNode('http://example.org#S'),
@@ -293,17 +296,17 @@ describe('ActorRdfReasonRuleRestriction', () => {
 
         const { execute } = await actor.run(action);
         await execute();
-        expect(source).toBeRdfIsomorphic([ quad(
+        expect(source).toBeRdfIsomorphic([quad(
           namedNode('http://example.org#S'),
           namedNode('http://example.org#a'),
           namedNode('http://example.org#S'),
-        ) ]);
+        )]);
         expect(destination).toBeRdfIsomorphic([]);
-        expect(data.dataset).toBeRdfIsomorphic([ quad(
+        expect((<any>data.dataset).value).toBeRdfIsomorphic([quad(
           namedNode('http://example.org#S'),
           namedNode('http://example.org#a'),
           namedNode('http://example.org#Thing'),
-        ) ]);
+        )]);
       });
     });
 
@@ -312,7 +315,7 @@ describe('ActorRdfReasonRuleRestriction', () => {
         action.context = action.context.set(KeysRdfReason.rules, 'my-nested-rules');
       });
 
-      it('should run with with the fact Jesse a Human and produce implicit data', async() => {
+      it('should run with with the fact Jesse a Human and produce implicit data', async () => {
         source.addQuad(
           quad(
             namedNode('http://example.org#Jesse'),
@@ -323,13 +326,13 @@ describe('ActorRdfReasonRuleRestriction', () => {
 
         const { execute } = await actor.run(action);
         await execute();
-        expect(source).toBeRdfIsomorphic([ quad(
+        expect(source).toBeRdfIsomorphic([quad(
           namedNode('http://example.org#Jesse'),
           namedNode('http://example.org#a'),
           namedNode('http://example.org#Human'),
-        ) ]);
+        )]);
         expect(destination).toBeRdfIsomorphic([]);
-        expect(data.dataset).toBeRdfIsomorphic([ quad(
+        expect((<any>data.dataset).value).toBeRdfIsomorphic([quad(
           namedNode('http://example.org#Human'),
           namedNode('http://example.org#a'),
           namedNode('http://example.org#Class'),
@@ -337,10 +340,10 @@ describe('ActorRdfReasonRuleRestriction', () => {
           namedNode('http://example.org#Class'),
           namedNode('http://example.org#a'),
           namedNode('http://example.org#Class'),
-        ) ]);
+        )]);
       });
 
-      it('should run with with the facts Jesse a Human / human subset of thing and produce implicit data', async() => {
+      it('should run with with the facts Jesse a Human / human subset of thing and produce implicit data', async () => {
         source.addQuad(
           quad(
             namedNode('http://example.org#Jesse'),
@@ -360,7 +363,7 @@ describe('ActorRdfReasonRuleRestriction', () => {
         const { execute } = await actor.run(action);
         await execute();
 
-        expect(source).toBeRdfIsomorphic([ quad(
+        expect(source).toBeRdfIsomorphic([quad(
           namedNode('http://example.org#Jesse'),
           namedNode('http://example.org#a'),
           namedNode('http://example.org#Human'),
@@ -368,10 +371,10 @@ describe('ActorRdfReasonRuleRestriction', () => {
           namedNode('http://example.org#Human'),
           namedNode('http://example.org#subsetOf'),
           namedNode('http://example.org#Thing'),
-        ) ]);
+        )]);
         expect(destination).toBeRdfIsomorphic([]);
-        expect((data.dataset).size).toBe(4);
-        expect(data.dataset).toBeRdfIsomorphic([ quad(
+        expect((<any>data.dataset).value.size).toBe(4);
+        expect((<any>data.dataset).value).toBeRdfIsomorphic([quad(
           namedNode('http://example.org#Jesse'),
           namedNode('http://example.org#a'),
           namedNode('http://example.org#Thing'),
@@ -387,7 +390,7 @@ describe('ActorRdfReasonRuleRestriction', () => {
           namedNode('http://example.org#Class'),
           namedNode('http://example.org#a'),
           namedNode('http://example.org#Class'),
-        ) ]);
+        )]);
       });
     });
 
@@ -396,7 +399,7 @@ describe('ActorRdfReasonRuleRestriction', () => {
         action.context = action.context.set(KeysRdfReason.rules, 'multi-conclusion-rules');
       });
 
-      it('should run with with the fact Jesse a Human and produce implicit data', async() => {
+      it('should run with with the fact Jesse a Human and produce implicit data', async () => {
         source.addQuad(
           quad(
             namedNode('http://example.org#Jesse'),
@@ -407,13 +410,13 @@ describe('ActorRdfReasonRuleRestriction', () => {
 
         const { execute } = await actor.run(action);
         await execute();
-        expect(source).toBeRdfIsomorphic([ quad(
+        expect(source).toBeRdfIsomorphic([quad(
           namedNode('http://example.org#Jesse'),
           namedNode('http://example.org#a'),
           namedNode('http://example.org#Human'),
-        ) ]);
+        )]);
         expect(destination).toBeRdfIsomorphic([]);
-        expect(data.dataset).toBeRdfIsomorphic([ quad(
+        expect((<any>data.dataset).value).toBeRdfIsomorphic([quad(
           namedNode('http://example.org#Jesse'),
           namedNode('http://example.org#a'),
           namedNode('http://example.org#Thing1'),
@@ -421,7 +424,7 @@ describe('ActorRdfReasonRuleRestriction', () => {
           namedNode('http://example.org#Jesse'),
           namedNode('http://example.org#a'),
           namedNode('http://example.org#Thing2'),
-        ) ]);
+        )]);
       });
     });
   });

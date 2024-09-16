@@ -1,10 +1,11 @@
-import type {
-  IActionRdfResolveQuadPattern,
-  IActorRdfResolveQuadPatternOutput,
-  MediatorRdfResolveQuadPattern,
-} from '@comunica/bus-rdf-resolve-quad-pattern';
+import type { IAction, IActorOutput } from '@comunica/core';
 import type { IActorArgs, IActorTest, Mediate } from '@comunica/core';
 import { Actor } from '@comunica/core';
+import { Algebra } from 'sparqlalgebrajs';
+import { UnionIterator, type AsyncIterator } from 'asynciterator';
+import type * as RDF from '@rdfjs/types';
+import { KeysQueryOperation } from "@comunica/context-entries";
+import { IQuerySourceWrapper } from "@comunica/types";
 
 /**
  * A comunica actor for rdf-resolve-quad-pattern-intercept events.
@@ -19,7 +20,6 @@ import { Actor } from '@comunica/core';
  */
 export abstract class ActorRdfResolveQuadPatternIntercept extends
   Actor<IActionRdfResolveQuadPatternIntercept, IActorTest, IActorRdfResolveQuadPatternInterceptOutput> {
-  public readonly mediatorRdfResolveQuadPattern: MediatorRdfResolveQuadPattern;
 
   /**
    * @param args - @defaultNested {<default_bus> a <cc:components/Bus.jsonld#Bus>} bus
@@ -33,20 +33,36 @@ export abstract class ActorRdfResolveQuadPatternIntercept extends
   }
 
   public abstract runIntercept(action: IActionRdfResolveQuadPatternIntercept):
-  Promise<IActionRdfResolveQuadPatternIntercept>;
+    Promise<IActionRdfResolveQuadPatternIntercept>;
 
   public async run(action: IActionRdfResolveQuadPatternIntercept): Promise<IActorRdfResolveQuadPatternInterceptOutput> {
-    return this.mediatorRdfResolveQuadPattern.mediate(await this.runIntercept(action));
+    const interceptQuery = await this.runIntercept(action);
+    const querySources = interceptQuery.context.getSafe<IQuerySourceWrapper[]>(KeysQueryOperation.querySources);
+    const quads: AsyncIterator<RDF.Quad>[] = [];
+
+    for (const querySource of querySources) {
+      const quad = querySource.source.queryQuads(interceptQuery.pattern, interceptQuery.context);
+      quads.push(quad);
+    }
+    return {
+      data: new UnionIterator(quads, { autoStart: false })
+    };
   }
 }
 
 export interface IActorRdfResolveQuadPatternInterceptArgs extends
   IActorArgs<IActionRdfResolveQuadPatternIntercept, IActorTest, IActorRdfResolveQuadPatternInterceptOutput> {
-  mediatorRdfResolveQuadPattern: MediatorRdfResolveQuadPattern;
 }
 
 // Revert to type = pattern once https://github.com/LinkedSoftwareDependencies/Components.js/issues/90 is fixed
-export interface IActionRdfResolveQuadPatternIntercept extends IActionRdfResolveQuadPattern {}
-export interface IActorRdfResolveQuadPatternInterceptOutput extends IActorRdfResolveQuadPatternOutput {}
+export interface IActionRdfResolveQuadPatternIntercept extends IAction {
+  /**
+     * The quad pattern to resolve.
+     */
+  pattern: Algebra.Pattern;
+}
+export interface IActorRdfResolveQuadPatternInterceptOutput extends IActorOutput {
+  data: AsyncIterator<RDF.Quad>;
+}
 export type MediatorRdfResolveQuadPatternIntercept =
-Mediate<IActionRdfResolveQuadPatternIntercept, IActorRdfResolveQuadPatternInterceptOutput>;
+  Mediate<IActionRdfResolveQuadPatternIntercept, IActorRdfResolveQuadPatternInterceptOutput>;

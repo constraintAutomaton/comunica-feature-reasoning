@@ -1,5 +1,4 @@
 import type { MediatorOptimizeRule } from '@comunica/bus-optimize-rule';
-import type { MediatorRdfResolveQuadPattern } from '@comunica/bus-rdf-resolve-quad-pattern';
 import type {
   IActionRdfUpdateQuads,
   IActorRdfUpdateQuadsOutput,
@@ -7,11 +6,12 @@ import type {
 } from '@comunica/bus-rdf-update-quads';
 import type { MediatorRuleResolve } from '@comunica/bus-rule-resolve';
 import type { IActorArgs, IActorTest } from '@comunica/core';
+import { KeysQueryOperation } from '@comunica/context-entries';
 import { KeysRdfReason } from '@comunica/reasoning-context-entries';
 import type { Rule, IReasonStatus, IReasonGroup } from '@comunica/reasoning-types';
-import type { IActionContext } from '@comunica/types';
+import type { IActionContext, IQuerySourceWrapper } from '@comunica/types';
 import type * as RDF from '@rdfjs/types';
-import { wrap, type AsyncIterator } from 'asynciterator';
+import { wrap, type AsyncIterator, UnionIterator } from 'asynciterator';
 import { matchPatternMappings } from 'rdf-terms';
 import type { Algebra } from 'sparqlalgebrajs';
 import type { IActionRdfReason, IActorRdfReasonOutput } from './ActorRdfReason';
@@ -24,8 +24,6 @@ import {
 
 export abstract class ActorRdfReasonMediated extends ActorRdfReason {
   public readonly mediatorRdfUpdateQuads: MediatorRdfUpdateQuads;
-
-  public readonly mediatorRdfResolveQuadPattern: MediatorRdfResolveQuadPattern;
 
   public readonly mediatorRuleResolve: MediatorRuleResolve;
 
@@ -47,11 +45,16 @@ export abstract class ActorRdfReasonMediated extends ActorRdfReason {
     match: (pattern: Algebra.Pattern) => AsyncIterator<RDF.Quad>;
   } {
     return {
-      match: (pattern: Algebra.Pattern): AsyncIterator<RDF.Quad> => wrap(
-        this.mediatorRdfResolveQuadPattern.mediate({ context, pattern }).then(({ data }) => data),
-        { autoStart: false },
-      ),
-    };
+      match: (pattern: Algebra.Pattern): AsyncIterator<RDF.Quad> => {
+        const sources = context.getSafe<IQuerySourceWrapper[]>(KeysQueryOperation.querySources);
+        const quads: AsyncIterator<RDF.Quad>[] = [];
+        for (const querySource of sources) {
+          const quad = querySource.source.queryQuads(pattern, context);
+          quads.push(quad);
+        }
+        return new UnionIterator(quads, { autoStart: false });
+      }
+    }
   }
 
   // TODO: See if we need to add this back in
@@ -62,12 +65,13 @@ export abstract class ActorRdfReasonMediated extends ActorRdfReason {
   // }
 
   protected unionQuadSource(context: IActionContext): { match: (pattern: Algebra.Pattern) => AsyncIterator<RDF.Quad> } {
-    return this.explicitQuadSource(setUnionSource(context));
+    const unionSources = setUnionSource(context);
+    return this.explicitQuadSource(unionSources);
   }
 
   // TODO [FUTURE]: Push this into a specific abstract interface for language agnostic reasoners.
   public getRules(action: IActionRdfReason): AsyncIterator<Rule> {
-    const getRules = async(): Promise<AsyncIterator<Rule>> => {
+    const getRules = async (): Promise<AsyncIterator<Rule>> => {
       const { data } = await this.mediatorRuleResolve.mediate(action);
       const { rules } = await this.mediatorOptimizeRule.mediate({ rules: data, ...action });
       return rules;
@@ -78,7 +82,7 @@ export abstract class ActorRdfReasonMediated extends ActorRdfReason {
 
   public async run(action: IActionRdfReason): Promise<IActorRdfReasonOutput> {
     return {
-      execute: async(): Promise<void> => {
+      execute: async (): Promise<void> => {
         const { updates, pattern } = action;
         if (updates) {
           // If there is an update - forget everything we know about the current status of reasoning
@@ -95,7 +99,7 @@ export abstract class ActorRdfReasonMediated extends ActorRdfReason {
         // If we have already done partial reasoning and are only interested in a certain
         // pattern then maybe we can use that
         if (status.type === 'partial' && pattern) {
-          for (const [ key, value ] of status.patterns) {
+          for (const [key, value] of status.patterns) {
             if (value.reasoned && matchPatternMappings(pattern, key)) {
               return value.done;
             }
@@ -130,7 +134,6 @@ export interface IActionRdfReasonExecute extends IActionRdfReason {
 export interface IActorRdfReasonMediatedArgs
   extends IActorArgs<IActionRdfReason, IActorTest, IActorRdfReasonOutput> {
   mediatorRdfUpdateQuads: MediatorRdfUpdateQuads;
-  mediatorRdfResolveQuadPattern: MediatorRdfResolveQuadPattern;
   mediatorRuleResolve: MediatorRuleResolve;
   mediatorOptimizeRule: MediatorOptimizeRule;
 }
