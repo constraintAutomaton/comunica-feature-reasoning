@@ -46,8 +46,8 @@
   },
   "devDependencies": {
     "@comunica/bus-rdf-update-quads": "^3.2.0",
-    "event-emitter-promisify":"^1.1.0",
-    "@types/n3": "^1.10.4"
+    "@types/n3": "^1.10.4",
+    "event-emitter-promisify": "^1.1.0"
   },
   "gitHead": "17b61cff21721451c6cc822377f59e34c53fe9e8"
 }

@@ -58,24 +58,24 @@ describe('ActorRdfResolveQuadPatternInterceptReasoned', () => {
       ]);
 
       const context = new ActionContext({
-        [KeysQueryOperation.querySources.name]: [{source: generateSource(source1)}],
+        [KeysQueryOperation.querySources.name]: [{ source: generateSource(source1) }],
         [KeysRdfReason.implicitDatasetFactory.name]: () => {
           const store = new Store();
           return {
             source: generateSource(store),
-            value: store
-          }
+            value: store,
+          };
         },
       });
 
       const contextMultiSource = new ActionContext({
-        [KeysQueryOperation.querySources.name]: [ {source: generateSource(source1)}, {source: generateSource(source2)} ],
+        [KeysQueryOperation.querySources.name]: [{ source: generateSource(source1) }, { source: generateSource(source2) }],
         [KeysRdfReason.implicitDatasetFactory.name]: () => {
           const store = new Store();
           return {
             source: generateSource(store),
-            value: store
-          }
+            value: store,
+          };
         },
       });
 
@@ -99,7 +99,7 @@ describe('ActorRdfResolveQuadPatternInterceptReasoned', () => {
     });
 
     it('should run with implicit data', async() => {
-      const datasetStore  =new Store([
+      const datasetStore = new Store([
         quad(
           namedNode('http://example.org#Jesse'),
           namedNode('http://example.org#a'),
@@ -109,7 +109,7 @@ describe('ActorRdfResolveQuadPatternInterceptReasoned', () => {
       const { data } = await actor.run({
         ...action,
         context: action.context.set(KeysRdfReason.data, {
-          dataset:{source: generateSource(datasetStore), value: datasetStore},
+          dataset: { source: generateSource(datasetStore), value: datasetStore },
         }),
       });
 
@@ -150,7 +150,7 @@ describe('ActorRdfResolveQuadPatternInterceptReasoned', () => {
     });
 
     it('should run with implicit data (multiple sources)', async() => {
-      const datasetStore  = new Store([
+      const datasetStore = new Store([
         quad(
           namedNode('http://example.org#Jesse'),
           namedNode('http://example.org#a'),
@@ -160,7 +160,7 @@ describe('ActorRdfResolveQuadPatternInterceptReasoned', () => {
       const { data } = await actor.run({
         ...action,
         context: actionMultiSource.context.set(KeysRdfReason.data, {
-          dataset: {source: generateSource(datasetStore), value: datasetStore},
+          dataset: { source: generateSource(datasetStore), value: datasetStore },
         }),
       });
 

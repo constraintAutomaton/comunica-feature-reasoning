@@ -5,8 +5,8 @@ import type {
   MediatorRdfUpdateQuads,
 } from '@comunica/bus-rdf-update-quads';
 import type { MediatorRuleResolve } from '@comunica/bus-rule-resolve';
-import type { IActorArgs, IActorTest } from '@comunica/core';
 import { KeysQueryOperation } from '@comunica/context-entries';
+import type { IActorArgs, IActorTest } from '@comunica/core';
 import { KeysRdfReason } from '@comunica/reasoning-context-entries';
 import type { Rule, IReasonStatus, IReasonGroup } from '@comunica/reasoning-types';
 import type { IActionContext, IQuerySourceWrapper } from '@comunica/types';
@@ -53,8 +53,8 @@ export abstract class ActorRdfReasonMediated extends ActorRdfReason {
           quads.push(quad);
         }
         return new UnionIterator(quads, { autoStart: false });
-      }
-    }
+      },
+    };
   }
 
   // TODO: See if we need to add this back in
@@ -71,7 +71,7 @@ export abstract class ActorRdfReasonMediated extends ActorRdfReason {
 
   // TODO [FUTURE]: Push this into a specific abstract interface for language agnostic reasoners.
   public getRules(action: IActionRdfReason): AsyncIterator<Rule> {
-    const getRules = async (): Promise<AsyncIterator<Rule>> => {
+    const getRules = async(): Promise<AsyncIterator<Rule>> => {
       const { data } = await this.mediatorRuleResolve.mediate(action);
       const { rules } = await this.mediatorOptimizeRule.mediate({ rules: data, ...action });
       return rules;
@@ -82,7 +82,7 @@ export abstract class ActorRdfReasonMediated extends ActorRdfReason {
 
   public async run(action: IActionRdfReason): Promise<IActorRdfReasonOutput> {
     return {
-      execute: async (): Promise<void> => {
+      execute: async(): Promise<void> => {
         const { updates, pattern } = action;
         if (updates) {
           // If there is an update - forget everything we know about the current status of reasoning
@@ -99,7 +99,7 @@ export abstract class ActorRdfReasonMediated extends ActorRdfReason {
         // If we have already done partial reasoning and are only interested in a certain
         // pattern then maybe we can use that
         if (status.type === 'partial' && pattern) {
-          for (const [key, value] of status.patterns) {
+          for (const [ key, value ] of status.patterns) {
             if (value.reasoned && matchPatternMappings(pattern, key)) {
               return value.done;
             }

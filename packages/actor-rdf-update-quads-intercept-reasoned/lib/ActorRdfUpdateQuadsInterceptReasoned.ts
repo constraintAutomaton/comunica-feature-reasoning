@@ -38,7 +38,7 @@ export class ActorRdfUpdateQuadsInterceptReasoned extends ActorRdfUpdateQuadsInt
     // TODO: Remove this logic into an actor on top of the update-quads bus that allows you to
     // view quad updates.
 
-    const getQuadsFromGraph =  (graph: RDF.Quad_Graph): AsyncIterator<RDF.Quad> => {
+    const getQuadsFromGraph = (graph: RDF.Quad_Graph): AsyncIterator<RDF.Quad> => {
       const querySources: IQuerySourceWrapper[] = action.context.get(KeysQueryOperation.querySources)!;
       const getWholeGraphOperation = factory.createPattern(variable('?s'), variable('?p'), variable('?o'), graph);
 
@@ -51,7 +51,7 @@ export class ActorRdfUpdateQuadsInterceptReasoned extends ActorRdfUpdateQuadsInt
     };
 
     async function getGraphDeletedQuads(graphs: RDF.DefaultGraph | 'NAMED' | 'ALL' | RDF.NamedNode[]):
-      Promise<AsyncIterator<RDF.Quad>> {
+    Promise<AsyncIterator<RDF.Quad>> {
       switch (graphs) {
         case 'ALL':
           return getQuadsFromGraph(defaultGraph());
@@ -67,7 +67,7 @@ export class ActorRdfUpdateQuadsInterceptReasoned extends ActorRdfUpdateQuadsInt
     }
 
     return {
-      execute: async () => {
+      execute: async() => {
         const quadStreamDelete = [
           action.deleteGraphs?.graphs && await getGraphDeletedQuads(action.deleteGraphs.graphs),
           action.quadStreamDelete?.clone(),

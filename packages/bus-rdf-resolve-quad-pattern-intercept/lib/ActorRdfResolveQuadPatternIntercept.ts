@@ -1,11 +1,10 @@
-import type { IAction, IActorOutput } from '@comunica/core';
-import type { IActorArgs, IActorTest, Mediate } from '@comunica/core';
+import { KeysQueryOperation } from '@comunica/context-entries';
+import type { IAction, IActorOutput, IActorArgs, IActorTest, Mediate } from '@comunica/core';
 import { Actor } from '@comunica/core';
-import { Algebra } from 'sparqlalgebrajs';
-import { UnionIterator, type AsyncIterator } from 'asynciterator';
+import type { IQuerySourceWrapper } from '@comunica/types';
 import type * as RDF from '@rdfjs/types';
-import { KeysQueryOperation } from "@comunica/context-entries";
-import { IQuerySourceWrapper } from "@comunica/types";
+import { UnionIterator, type AsyncIterator } from 'asynciterator';
+import type { Algebra } from 'sparqlalgebrajs';
 
 /**
  * A comunica actor for rdf-resolve-quad-pattern-intercept events.
@@ -20,7 +19,6 @@ import { IQuerySourceWrapper } from "@comunica/types";
  */
 export abstract class ActorRdfResolveQuadPatternIntercept extends
   Actor<IActionRdfResolveQuadPatternIntercept, IActorTest, IActorRdfResolveQuadPatternInterceptOutput> {
-
   /**
    * @param args - @defaultNested {<default_bus> a <cc:components/Bus.jsonld#Bus>} bus
    */
@@ -33,7 +31,7 @@ export abstract class ActorRdfResolveQuadPatternIntercept extends
   }
 
   public abstract runIntercept(action: IActionRdfResolveQuadPatternIntercept):
-    Promise<IActionRdfResolveQuadPatternIntercept>;
+  Promise<IActionRdfResolveQuadPatternIntercept>;
 
   public async run(action: IActionRdfResolveQuadPatternIntercept): Promise<IActorRdfResolveQuadPatternInterceptOutput> {
     const interceptQuery = await this.runIntercept(action);
@@ -45,7 +43,7 @@ export abstract class ActorRdfResolveQuadPatternIntercept extends
       quads.push(quad);
     }
     return {
-      data: new UnionIterator(quads, { autoStart: false })
+      data: new UnionIterator(quads, { autoStart: false }),
     };
   }
 }
@@ -57,8 +55,8 @@ export interface IActorRdfResolveQuadPatternInterceptArgs extends
 // Revert to type = pattern once https://github.com/LinkedSoftwareDependencies/Components.js/issues/90 is fixed
 export interface IActionRdfResolveQuadPatternIntercept extends IAction {
   /**
-     * The quad pattern to resolve.
-     */
+   * The quad pattern to resolve.
+   */
   pattern: Algebra.Pattern;
 }
 export interface IActorRdfResolveQuadPatternInterceptOutput extends IActorOutput {
