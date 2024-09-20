@@ -2,10 +2,7 @@ import type { IQuerySource, IActionContext } from '@comunica/types';
 import { Store } from 'n3';
 import { Operation } from 'sparqlalgebrajs/lib/algebra';
 import type * as RDF from '@rdfjs/types';
-import { DataFactory } from 'rdf-data-factory';
 import { fromArray, AsyncIterator } from 'asynciterator';
-
-const DF = new DataFactory<RDF.BaseQuad>();
 
 export function generateSource(store?: Store): IQuerySource {
   const effectiveStore = store ?? new Store();
